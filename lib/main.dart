@@ -1,24 +1,43 @@
-import 'package:estike/user.dart';
-import 'package:estike/user_card.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'drink_page.dart';
+import 'package:sqflite/sqflite.dart';
+import 'search_person_page.dart';
+import 'package:flutter/widgets.dart';
+import 'database_helper.dart';
+import 'drink.dart';
+import 'package:path/path.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb) {
+    await DatabaseHelper.instance.initDatabase();
+    //'seeder'
+    List<Drink> drinks = [
+      Drink('Soproni 1895', 300, DrinkType.beer),
+      Drink('Soproni', 280, DrinkType.beer),
+      Drink('Heineken', 320, DrinkType.beer),
+      Drink('Soproni meggy', 350, DrinkType.beer),
+      Drink('Bak', 300, DrinkType.beer),
+      Drink('Estike koktel', 800, DrinkType.cocktail),
+    ];
+    for (Drink drink in drinks) {
+      drink.insert();
+    }
+    //'seeder ends'
+    initDrinks();
+    // deleteDatabase(join(await getDatabasesPath(), 'estike_database.db'));
+  }
+
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.orange,
-        // textTheme: TextTheme(
-        //   headline6:
-        // ),
         cardTheme: CardTheme(
           margin: EdgeInsets.all(5),
           shape: RoundedRectangleBorder(
@@ -28,96 +47,8 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => MyHomePage(title: 'Estike számla'),
-        // '/drink_page': (context) => DrinkPage(),
+        '/': (context) => SearchPersonPage(title: 'Estike számla'),
       },
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  String searchWord = '';
-  TextEditingController controller = TextEditingController();
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: _generateBody(),
-    );
-  }
-
-  void resetTextFiled() {
-    setState(() {
-      controller.clear();
-      searchWord = '';
-    });
-  }
-
-  Widget _generateBody() {
-    return ListView(
-      shrinkWrap: true,
-      padding: EdgeInsets.all(10),
-      children: [
-        TextField(
-          onChanged: (value) {
-            setState(() {
-              searchWord = value;
-            });
-          },
-          autofocus: true,
-          controller: controller,
-          decoration: InputDecoration(
-            labelText: 'Keresés',
-          ),
-        ),
-        _generateGrid(),
-      ],
-    );
-  }
-
-  Widget _generateGrid() {
-    List<User> users = allUsers;
-    if (searchWord != "") {
-      users = allUsers
-          .where((element) =>
-              element.id.toString().contains(searchWord) ||
-              element.name.toLowerCase().contains(searchWord.toLowerCase()))
-          .toList();
-    }
-    if (users.length == 0) return Container();
-    double width = MediaQuery.of(context).size.width;
-    bool small = false;
-    int count = (width / 200).floor();
-    if (width < 400) {
-      small = true;
-      count = (width / 150).floor();
-    }
-    return GridView.count(
-      physics: NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      crossAxisCount: count,
-      children: users.map<Widget>(
-        (e) {
-          FocusNode node = FocusNode();
-          // nodes.add(node);
-          return UserCard(
-            resetTextField: resetTextFiled,
-            // node: node,
-            user: e,
-            small: small,
-          );
-        },
-      ).toList(),
     );
   }
 }
