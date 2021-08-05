@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'drink.dart';
+import 'models/drink.dart';
 
 class DrinkCard extends StatelessWidget {
   final Function(Drink drink) addDrinkToList;

@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 import 'search_person_page.dart';
 import 'package:flutter/widgets.dart';
 import 'database_helper.dart';
-import 'drink.dart';
+import 'models/drink.dart';
 import 'package:path/path.dart';
 
 void main() async {

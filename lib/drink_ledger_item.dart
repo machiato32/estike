@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'drink.dart';
+import 'models/drink.dart';
 
 class DrinkLedgerItem extends StatelessWidget {
   final Function(Drink drink) removeDrinkFromList;

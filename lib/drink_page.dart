@@ -1,9 +1,9 @@
 import 'package:estike/drink_ledger_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'drink.dart';
+import 'models/drink.dart';
 import 'drink_card.dart';
-import 'user.dart';
+import 'models/user.dart';
 
 class DrinkPage extends StatefulWidget {
   final User user;
@@ -222,7 +222,8 @@ class _DrinkPageState extends State<DrinkPage> {
       sortedDrinks.addEntries(mapEntries);
       drinks = sortedDrinks.keys.take(5).toList();
     } else {
-      drinks = allDrinks.where((element) => element.type == type).toList();
+      drinks =
+          Drink.allDrinks.where((element) => element.type == type).toList();
     }
 
     if (drinks.length == 0) return Container();

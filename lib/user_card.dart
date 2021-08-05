@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'drink_page.dart';
-import 'user.dart';
+import 'models/user.dart';
 
 class UserCard extends StatelessWidget {
   final Function resetTextField;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'add_user_page.dart';
-import 'user.dart';
+import 'models/user.dart';
 import 'user_card.dart';
 
 class SearchPersonPage extends StatefulWidget {
@@ -107,9 +107,9 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
   }
 
   Widget _generateGrid() {
-    List<User> users = allUsers;
+    List<User> users = User.allUsers;
     if (searchWord != "") {
-      users = allUsers
+      users = User.allUsers
           .where((element) =>
               element.id.toString().contains(searchWord) ||
               element.name.toLowerCase().contains(searchWord.toLowerCase()))

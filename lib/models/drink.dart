@@ -2,20 +2,26 @@ import 'dart:async';
 
 import 'package:estike/database_helper.dart';
 import 'package:sqflite/sqflite.dart';
+import 'user.dart';
 
 enum DrinkType { beer, long, short, cocktail, other }
 
 class Drink {
+  static List<Drink> allDrinks = [];
   int price;
   String name;
   DrinkType type;
   String? imageURL;
+  Map<User, int> peopleBuying = {};
 
   Drink(this.name, this.price, this.type, {this.imageURL});
 
   factory Drink.fromMap(Map<String, dynamic> map) {
     return Drink(
-        map['name'], map['price'], drinkTypeFromString(map['drinkType']));
+      map['name'],
+      map['price'],
+      drinkTypeFromString(map['drinkType']),
+    );
   }
 
   Map<String, dynamic> toMap() {
@@ -43,7 +49,7 @@ class Drink {
         where: 'name = ?', whereArgs: [this.name]);
   }
 
-  Future<int> delete(int id) async {
+  Future<int> delete() async {
     Database db = await DatabaseHelper.instance.database;
     return await db.delete('drinks', where: 'name = ?', whereArgs: [this.name]);
   }
@@ -79,10 +85,8 @@ DrinkType drinkTypeFromString(String s) {
   }
 }
 
-List<Drink> allDrinks = [];
-
 Future<void> initDrinks() async {
-  allDrinks = await queryDrinks();
+  Drink.allDrinks = await queryDrinks();
 }
 
 Future<List<Drink>> queryDrinks() async {
@@ -94,5 +98,5 @@ Future<List<Drink>> queryDrinks() async {
 void addDrink(String name, int price, DrinkType type, {String? imageURL}) {
   Drink drink = Drink(name, price, type, imageURL: imageURL);
   drink.insert();
-  allDrinks.add(drink);
+  Drink.allDrinks.add(drink);
 }

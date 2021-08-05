@@ -29,7 +29,16 @@ class DatabaseHelper {
   Future _onCreate(Database db, int version) async {
     await db.execute(
         'CREATE TABLE drinks(name TEXT PRIMARY KEY, price INTEGER, drinkType TEXT)');
-    // await db.execute('CREATE TABLE users(id INTEGER PRIMARY KEY, price INTEGER, name TEXT, drinkType TEXT)');
+    await db.execute(
+        'CREATE TABLE users(id INTEGER PRIMARY KEY, name TEXT NOT NULL, balance INT NOT NULL)');
+    await db.execute('''CREATE TABLE drinks_users(id INTEGER PRIMARY KEY, 
+        drink_name TEXT NOT NULL,
+        user_id INTEGER NOT NULL, 
+        times_bought INTEGER, 
+        FOREIGN KEY (drink_name) REFERENCES drinks (name) 
+          ON DELETE NO ACTION ON UPDATE NO ACTION,
+        FOREIGN KEY (user_id) REFERENCES users (id) 
+          ON DELETE NO ACTION ON UPDATE NO ACTION)''');
   }
 
 //   // Helper methods
