@@ -1,18 +1,38 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../database_helper.dart';
-import 'drink.dart';
+import 'product.dart';
 
 class User {
   static List<User> allUsers = [];
   String name;
   int id;
   int balance;
-  Map<Drink, int> drinksBought = {};
+  late DateTime createdAt;
+  late DateTime updatedAt;
+  Map<int, int> productsBought = {}; // productId, timesBought
 
-  User(this.name, this.id, this.balance);
+  User(this.id, this.name, this.balance,
+      {DateTime? createdAt, DateTime? updatedAt}) {
+    if (createdAt == null) {
+      this.createdAt = DateTime.now();
+    } else {
+      this.createdAt = createdAt;
+    }
+    if (updatedAt == null) {
+      this.updatedAt = DateTime.now();
+    } else {
+      this.updatedAt = updatedAt;
+    }
+  }
   factory User.fromMap(Map<String, dynamic> map) {
-    return User(map['name'], map['id'], map['balance']);
+    return User(
+      map['id'],
+      map['name'],
+      map['balance'],
+      createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at']),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at']),
+    );
   }
 
   Map<String, dynamic> toMap() {
@@ -20,28 +40,62 @@ class User {
       'id': id,
       'name': name,
       'balance': balance,
+      'created_at': createdAt.millisecondsSinceEpoch,
+      'updated_at': updatedAt.millisecondsSinceEpoch,
     };
   }
 
-  void addBoughtDrink(Drink drink, {int number = 1}) {
-    if (drinksBought.containsKey(drink)) {
-      drinksBought[drink] = drinksBought[drink]! + number;
-    } else {
-      drinksBought[drink] = number;
+  Future<bool> insert() async {
+    // Get a reference to the database.
+    final db = await DatabaseHelper.instance.database;
+
+    await db.insert(
+      'users',
+      this.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    return true;
+  }
+
+  Future<bool> update() async {
+    try {
+      Database db = await DatabaseHelper.instance.database;
+      await db
+          .update('users', this.toMap(), where: 'id = ?', whereArgs: [this.id]);
+      return true;
+    } catch (_) {
+      throw _;
     }
   }
 
-  void initUsers() async {
-    allUsers = await queryUsers();
+  Future<bool> delete() async {
+    Database db = await DatabaseHelper.instance.database;
+    await db.delete('users', where: 'id = ?', whereArgs: [this.id]);
+    return true;
   }
 
-  Future<List<User>> queryUsers() async {
-    Database db = await DatabaseHelper.instance.database;
-    List<Map<String, dynamic>> users = await db.query('users');
-    return users.map((e) => User.fromMap(e)).toList();
+  void addBoughProduct(Product product, {int number = 1}) {
+    if (productsBought.containsKey(product.id)) {
+      productsBought[product.id] = productsBought[product.id]! + number;
+    } else {
+      productsBought[product.id] = number;
+    }
   }
 }
 
-addUser(String name, int id, {int balance = 0}) {
-  User.allUsers.add(User(name, id, balance));
+Future<void> initUsers() async {
+  User.allUsers = await queryUsers();
+}
+
+Future<List<User>> queryUsers() async {
+  Database db = await DatabaseHelper.instance.database;
+  List<Map<String, dynamic>> users = await db.query('users');
+  return users.map((e) => User.fromMap(e)).toList();
+}
+
+Future<bool> addUser(String name, int id, {int balance = 0}) async {
+  User user = User(id, name, balance);
+  await user.insert();
+  User.allUsers.add(user);
+  return true;
 }

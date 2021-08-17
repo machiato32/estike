@@ -1,1 +1,0 @@
-bool isOnline = false;

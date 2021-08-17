@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'drink_page.dart';
-import 'models/user.dart';
+import '../product/product_page.dart';
+import '../../models/user.dart';
 
 class UserCard extends StatelessWidget {
   final Function resetTextField;
@@ -19,12 +19,13 @@ class UserCard extends StatelessWidget {
       aspectRatio: 1,
       child: Card(
         child: InkWell(
-          // focusNode: node,
           borderRadius: BorderRadius.circular(30),
           onTap: () {
-            Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => DrinkPage(user: user)));
-            resetTextField();
+            Navigator.of(context)
+                .push(MaterialPageRoute(
+                    builder: (context) => ProductPage(user: user)))
+                .then((value) => resetTextField());
+            // resetTextField();
           },
           child: Padding(
             padding: EdgeInsets.all(8),
@@ -37,18 +38,31 @@ class UserCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Center(
-                      child: Text(
-                        user.name,
-                        style: small
-                            ? Theme.of(context).textTheme.headline5
-                            : Theme.of(context).textTheme.headline4,
-                        textAlign: TextAlign.center,
+                    Flexible(
+                      child: Column(
+                        children: [
+                          Text(
+                            user.id.toString(),
+                            style: small
+                                ? Theme.of(context).textTheme.headline6
+                                : Theme.of(context).textTheme.headline5,
+                            textAlign: TextAlign.center,
+                          ),
+                          Flexible(
+                            child: Text(
+                              user.name,
+                              style: small
+                                  ? Theme.of(context).textTheme.headline5
+                                  : Theme.of(context).textTheme.headline4,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Center(
                       child: Text(
-                        user.id.toString(),
+                        user.balance.toString() + '🐪',
                         style: small
                             ? Theme.of(context).textTheme.headline6
                             : Theme.of(context).textTheme.headline5,

@@ -1,0 +1,39 @@
+// users get
+http.Response response =
+    await httpGet(context: context, uri: generateUri(GetUriKeys.users));
+List<Map<String, dynamic>> decoded = jsonDecode(response.body);
+List<User> users = [];
+for (Map<String, dynamic> decodedUser in decoded) {
+User user = User(
+    decodedUser['id'],
+    decodedUser['name'],
+    decodedUser['balance'],
+    createdAt: DateTime.parse(decodedUser['created_at']),
+    updatedAt: DateTime.parse(decodedUser['updated_at']),
+);
+user.productsBought = decodedUser['products_bought'];
+users.add(user);
+}
+return users;
+
+// drinks get
+http.Response response =
+        await httpGet(context: context, uri: generateUri(GetUriKeys.drinks));
+    List<Map<String, dynamic>> decoded = jsonDecode(response.body);
+    List<Product> products = [];
+    for (Map<String, dynamic> decodedProduct in decoded) {
+    Product product = Product(
+        decodedProduct['name'],
+        decodedProduct['price'],
+        productTypeFromString(decodedProduct['type']),
+        id: decodedProduct['id'],
+        createdAt: DateTime.parse(decodedProduct['created_at']),
+        updatedAt: DateTime.parse(decodedProduct['updated_at']),
+    );
+    product.peopleBuying = decodedProduct['people_buying'];
+    products.add(product);
+    }
+    return products;
+} catch (_) {
+    throw _;
+}

@@ -1,31 +1,43 @@
+import 'package:estike/models/purchase.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
-import 'search_person_page.dart';
+import 'models/user.dart';
+import 'widgets/user/search_person_page.dart';
 import 'package:flutter/widgets.dart';
 import 'database_helper.dart';
-import 'models/drink.dart';
+import 'models/product.dart';
 import 'package:path/path.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (!kIsWeb) {
     await DatabaseHelper.instance.initDatabase();
-    //'seeder'
-    List<Drink> drinks = [
-      Drink('Soproni 1895', 300, DrinkType.beer),
-      Drink('Soproni', 280, DrinkType.beer),
-      Drink('Heineken', 320, DrinkType.beer),
-      Drink('Soproni meggy', 350, DrinkType.beer),
-      Drink('Bak', 300, DrinkType.beer),
-      Drink('Estike koktel', 800, DrinkType.cocktail),
-    ];
-    for (Drink drink in drinks) {
-      drink.insert();
-    }
-    //'seeder ends'
-    initDrinks();
-    // deleteDatabase(join(await getDatabasesPath(), 'estike_database.db'));
+    // //'seeder'
+    // List<Product> drinks = [
+    //   Product('Soproni 1895', 300, ProductType.beer),
+    //   Product('Soproni', 280, ProductType.beer),
+    //   Product('Heineken', 320, ProductType.beer),
+    //   Product('Soproni meggy', 350, ProductType.beer),
+    //   Product('Bak', 300, ProductType.beer),
+    //   Product('Estike koktel', 800, ProductType.cocktail),
+    // ];
+    // for (Product drink in drinks) {
+    //   drink.insert();
+    // }
+    // List<User> users = [
+    //   User(0, 'Hapak Jozsef', 0),
+    //   User(1895, 'Bondici Laszlo', 0),
+    //   User(33, 'Zsiga Tamas', 0)
+    // ];
+    // for (User user in users) {
+    //   user.insert();
+    // }
+    // //'seeder ends'
+    await initProducts();
+    await initUsers();
+    await initPurchases();
+    // // deleteDatabase(join(await getDatabasesPath(), 'estike_database.db'));
   }
 
   runApp(MyApp());
@@ -37,7 +49,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.orange,
+        primarySwatch: Colors.cyan,
         cardTheme: CardTheme(
           margin: EdgeInsets.all(5),
           shape: RoundedRectangleBorder(

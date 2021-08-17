@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'models/drink.dart';
+import '../../models/product.dart';
 
-class DrinkCard extends StatelessWidget {
-  final Function(Drink drink) addDrinkToList;
-  final Drink drink;
+class ProductCard extends StatelessWidget {
+  final Function(Product product) addProductToList;
+  final Product product;
   final bool small;
   final FocusNode node;
-  const DrinkCard(
-      {required this.drink,
+  const ProductCard(
+      {required this.product,
       required this.node,
       this.small = false,
-      required this.addDrinkToList});
+      required this.addProductToList});
 
   @override
   Widget build(BuildContext context) {
@@ -21,13 +21,13 @@ class DrinkCard extends StatelessWidget {
           focusNode: node,
           borderRadius: BorderRadius.circular(30),
           onTap: () {
-            addDrinkToList(drink);
+            addProductToList(product);
           },
           child: Padding(
             padding: EdgeInsets.all(8),
             child: Stack(
               children: [
-                drink.imageURL != null //TODO
+                product.imageURL != null //TODO
                     ? Container()
                     : Container(),
                 Material(
@@ -39,7 +39,7 @@ class DrinkCard extends StatelessWidget {
                   children: [
                     Center(
                       child: Text(
-                        drink.name,
+                        product.name,
                         style: small
                             ? Theme.of(context).textTheme.headline5
                             : Theme.of(context).textTheme.headline4,
@@ -48,7 +48,7 @@ class DrinkCard extends StatelessWidget {
                     ),
                     Center(
                       child: Text(
-                        drink.price.toString() + '🐪',
+                        product.price.toString() + '🐪',
                         style: small
                             ? Theme.of(context).textTheme.headline6
                             : Theme.of(context).textTheme.headline5,

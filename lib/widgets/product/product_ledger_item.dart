@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'models/drink.dart';
+import '../../models/product.dart';
 
-class DrinkLedgerItem extends StatelessWidget {
-  final Function(Drink drink) removeDrinkFromList;
-  final Function(Drink drink) addDrinkToList;
-  final Drink drink;
+class ProductLedgerItem extends StatelessWidget {
+  final Function(Product product) removeProductFromList;
+  final Function(Product product) addProductToList;
+  final Product product;
   final int itemNum;
-  const DrinkLedgerItem({
-    required this.drink,
+  const ProductLedgerItem({
+    required this.product,
     required this.itemNum,
-    required this.removeDrinkFromList,
-    required this.addDrinkToList,
+    required this.removeProductFromList,
+    required this.addProductToList,
   });
 
   @override
@@ -22,7 +22,7 @@ class DrinkLedgerItem extends StatelessWidget {
         children: [
           Flexible(
             child: Text(
-              itemNum.toString() + ' x ' + drink.name,
+              itemNum.toString() + ' x ' + product.name,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.headline5,
             ),
@@ -32,20 +32,20 @@ class DrinkLedgerItem extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: () {
-                  removeDrinkFromList(drink);
+                  removeProductFromList(product);
                 },
                 icon: Icon(Icons.remove),
               ),
               IconButton(
                 onPressed: () {
-                  addDrinkToList(drink);
+                  addProductToList(product);
                 },
                 icon: Icon(Icons.add),
               ),
               Container(
                 width: 90,
                 child: Text(
-                  (drink.price * itemNum).toString() + '🐪',
+                  (product.price * itemNum).toString() + '🐪',
                   style: Theme.of(context).textTheme.headline5,
                 ),
               ),
