@@ -1,5 +1,7 @@
 import 'package:estike/config.dart';
+import 'package:estike/http_handler.dart';
 import 'package:estike/models/user.dart';
+import 'package:estike/widgets/future_success_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -47,6 +49,9 @@ class _AddUserPageState extends State<AddUserPage> {
               autovalidateMode: AutovalidateMode.onUserInteraction,
               validator: (String? text) {
                 if (text == null) {
+                  return 'Jaj!';
+                }
+                if (text == '') {
                   return 'Nem lehet üres!';
                 }
                 int? id = int.tryParse(text);
@@ -85,8 +90,14 @@ class _AddUserPageState extends State<AddUserPage> {
                     if (key.currentState!.validate()) {
                       String name = nameController.text;
                       int id = int.parse(idController.text);
-                      addUser(name, id);
-                      Navigator.pop(context); //TODO: FutureSuccessDialog
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return FutureSuccessDialog(
+                            future: _postUser(name, id),
+                          );
+                        },
+                      );
                     }
                   } else {
                     //TODO: this
@@ -99,5 +110,29 @@ class _AddUserPageState extends State<AddUserPage> {
         ),
       ),
     );
+  }
+
+  Future<bool> _postUser(String name, int id) async {
+    try {
+      if (isOnline) {
+        Map<String, dynamic> body = {
+          'name': name,
+          'id': id,
+        };
+        await httpPost(context: context, uri: '/users', body: body);
+      } else {
+        await addUser(name, id);
+      }
+      Future.delayed(Duration(milliseconds: 300))
+          .then((value) => _onPostUser());
+      return true;
+    } catch (_) {
+      throw _;
+    }
+  }
+
+  void _onPostUser() {
+    Navigator.pop(context);
+    Navigator.pop(context);
   }
 }

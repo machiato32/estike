@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../../config.dart';
-import 'add_user_page.dart';
 import '../../models/user.dart';
+import 'add_user_page.dart';
 import 'user_card.dart';
 
 class SearchPersonPage extends StatefulWidget {
@@ -51,8 +51,10 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
                   "Egyenleg szerkesztése",
                 ),
                 onTap: () {
-                  Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => ModifyBalance()));
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(
+                          builder: (context) => ModifyBalance()))
+                      .then((value) => resetAll());
                 },
               ),
               ListTile(
@@ -63,21 +65,26 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
                   "Felhasználó hozzáadása",
                 ),
                 onTap: () {
-                  Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => AddUserPage()));
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(
+                          builder: (context) => AddUserPage()))
+                      .then((value) => resetAll());
                 },
               ),
-              ListTile(
-                leading: Icon(
-                  Icons.edit,
+              Visibility(
+                visible: isOnline,
+                child: ListTile(
+                  leading: Icon(
+                    Icons.edit,
+                  ),
+                  title: Text(
+                    "Italok szerkesztése",
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ModifyProductPage()));
+                  },
                 ),
-                title: Text(
-                  "Italok szerkesztése",
-                ),
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => ModifyProductPage()));
-                },
               ),
               ListTile(
                 leading: Icon(
@@ -104,14 +111,18 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
 
   @override
   void initState() {
-    _users = null;
-    _users = _getUsers();
+    if (isOnline) {
+      _users = null;
+      _users = _getUsers();
+    }
     super.initState();
   }
 
-  void resetTextFiled() {
-    _users = null;
-    _users = _getUsers();
+  void resetAll() {
+    if (isOnline) {
+      _users = null;
+      _users = _getUsers();
+    }
     setState(() {
       controller.clear();
       searchWord = '';
@@ -145,7 +156,7 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
                       //TODO
                     }
                   }
-                  return CircularProgressIndicator();
+                  return Center(child: CircularProgressIndicator());
                 },
               )
             : _generateGrid(User.allUsers),
@@ -209,7 +220,7 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
       children: users.map<Widget>(
         (e) {
           return UserCard(
-            resetTextField: resetTextFiled,
+            resetTextField: resetAll,
             user: e,
             small: small,
           );

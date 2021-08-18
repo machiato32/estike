@@ -1,13 +1,15 @@
+import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import '../config.dart';
 
 enum GetUriKeys {
   users,
   drinks,
+  history,
   groupHasGuests,
   groupCurrent,
   groupMember,
@@ -32,6 +34,7 @@ enum GetUriKeys {
 List<String> getUris = [
   '/users',
   '/drinks',
+  '/history',
   '/groups/{}/has_guests',
   '/groups/{}',
   '/groups/{}/member',

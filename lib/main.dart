@@ -1,19 +1,18 @@
 import 'package:estike/models/purchase.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import 'models/user.dart';
-import 'widgets/user/search_person_page.dart';
 import 'package:flutter/widgets.dart';
+
 import 'database_helper.dart';
 import 'models/product.dart';
-import 'package:path/path.dart';
+import 'models/user.dart';
+import 'widgets/user/search_person_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (!kIsWeb) {
     await DatabaseHelper.instance.initDatabase();
-    // //'seeder'
+    //'seeder'
     // List<Product> drinks = [
     //   Product('Soproni 1895', 300, ProductType.beer),
     //   Product('Soproni', 280, ProductType.beer),
@@ -33,7 +32,7 @@ void main() async {
     // for (User user in users) {
     //   user.insert();
     // }
-    // //'seeder ends'
+    // //'seeder' ends
     await initProducts();
     await initUsers();
     await initPurchases();

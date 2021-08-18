@@ -4,13 +4,13 @@ import 'package:estike/models/purchase.dart';
 import 'package:estike/widgets/future_success_dialog.dart';
 import 'package:estike/widgets/product/product_ledger_item.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+
 import '../../config.dart';
 import '../../http_handler.dart';
 import '../../models/product.dart';
-import 'product_card.dart';
 import '../../models/user.dart';
-import 'package:http/http.dart' as http;
+import 'product_card.dart';
 
 class ProductPage extends StatefulWidget {
   final User user;
@@ -25,9 +25,10 @@ class _ProductPageState extends State<ProductPage> {
   List<FocusNode> nodes = [];
   int nodeNum = 0;
   Map<Product, int> productsToBuy = {};
+  bool small = false;
   @override
   Widget build(BuildContext context) {
-    bool small = MediaQuery.of(context).size.width <= 1200;
+    small = MediaQuery.of(context).size.width <= 1200;
     nodes = [];
     return Scaffold(
       appBar: AppBar(
@@ -39,7 +40,7 @@ class _ProductPageState extends State<ProductPage> {
                 Expanded(
                   child: isOnline
                       ? FutureBuilder(
-                          future: _getDrinks(),
+                          future: _getProducts(),
                           builder:
                               (context, AsyncSnapshot<List<Product>> snapshot) {
                             if (snapshot.connectionState ==
@@ -115,7 +116,7 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
-  Future<List<Product>> _getDrinks() async {
+  Future<List<Product>> _getProducts() async {
     try {
       http.Response response =
           await httpGet(context: context, uri: generateUri(GetUriKeys.drinks));
@@ -171,6 +172,30 @@ class _ProductPageState extends State<ProductPage> {
       padding: EdgeInsets.all(10),
       shrinkWrap: true,
       children: [
+        Visibility(
+          visible: productsToBuy.keys.length > 0,
+          child: Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                if (productsToBuy.keys.length != 0) {
+                  if (sum(productsToBuy) <= widget.user.balance) {
+                    showDialog(
+                      barrierDismissible: false,
+                      context: context,
+                      builder: (context) {
+                        return FutureSuccessDialog(future: _postPurchases());
+                      },
+                    );
+                  }
+                }
+              },
+              child: Icon(
+                Icons.send,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -225,26 +250,7 @@ class _ProductPageState extends State<ProductPage> {
               Divider(),
               Text(
                 'Összesen: ' + sum(productsToBuy).toString() + '🐪',
-                style: Theme.of(context).textTheme.headline4,
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (productsToBuy.keys.length != 0) {
-                    if (sum(productsToBuy) <= widget.user.balance) {
-                      showDialog(
-                        barrierDismissible: false,
-                        context: context,
-                        builder: (context) {
-                          return FutureSuccessDialog(future: _postPurchases());
-                        },
-                      );
-                    }
-                  }
-                },
-                child: Icon(
-                  Icons.send,
-                  color: Colors.white,
-                ),
+                style: Theme.of(context).textTheme.headline5,
               ),
             ],
           ),
@@ -255,7 +261,11 @@ class _ProductPageState extends State<ProductPage> {
   Future<bool> _postPurchases() async {
     try {
       if (isOnline) {
-        //TODO
+        Map<String, dynamic> body = {
+          'user_id': widget.user.id,
+          'product_ids': productsToBuy.keys.map((e) => e.id).toList(),
+        };
+        await httpPost(context: context, uri: '/purchases', body: body);
       } else {
         for (Product product in productsToBuy.keys) {
           widget.user.addBoughProduct(product, number: productsToBuy[product]!);

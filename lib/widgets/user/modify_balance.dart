@@ -1,9 +1,14 @@
+import 'dart:convert';
+
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:estike/config.dart';
 import 'package:estike/models/user.dart';
 import 'package:estike/widgets/future_success_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+
+import '../../http_handler.dart';
 
 class ModifyBalance extends StatefulWidget {
   const ModifyBalance({Key? key}) : super(key: key);
@@ -15,6 +20,41 @@ class ModifyBalance extends StatefulWidget {
 class _ModifyBalanceState extends State<ModifyBalance> {
   User? selectedUser;
   TextEditingController controller = TextEditingController();
+  late Future<List<User>>? _users;
+  @override
+  void initState() {
+    _users = null;
+    _users = _getUsers();
+    super.initState();
+  }
+
+  Future<List<User>> _getUsers() async {
+    try {
+      if (isOnline) {
+        http.Response response =
+            await httpGet(context: context, uri: generateUri(GetUriKeys.users));
+        List<Map<String, dynamic>> decoded = jsonDecode(response.body);
+        List<User> users = [];
+        for (Map<String, dynamic> decodedUser in decoded) {
+          User user = User(
+            decodedUser['id'],
+            decodedUser['name'],
+            decodedUser['balance'],
+            createdAt: DateTime.parse(decodedUser['created_at']),
+            updatedAt: DateTime.parse(decodedUser['updated_at']),
+          );
+          user.productsBought = decodedUser['products_bought'];
+          users.add(user);
+        }
+        return users;
+      } else {
+        return User.allUsers;
+      }
+    } catch (_) {
+      throw _;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     print(selectedUser == null);
@@ -25,34 +65,48 @@ class _ModifyBalanceState extends State<ModifyBalance> {
       body: ListView(
         padding: EdgeInsets.all(30),
         children: [
-          DropdownSearch<User>(
-            selectedItem: selectedUser,
-            items: User.allUsers,
-            hint: 'Felhasználó kiválasztása',
-            onChanged: (newUser) {
-              setState(() {
-                selectedUser = newUser;
-              });
-            },
-            showSearchBox: true,
-            filterFn: (user, filter) {
-              return user.name.toLowerCase().contains(filter.toLowerCase()) ||
-                  user.id.toString().contains(filter);
-            },
-            popupItemBuilder: (context, user, isSelected) {
-              return ListTile(
-                title: Text(user.name),
-                subtitle: Text(user.id.toString()),
-              );
-            },
-            dropdownBuilder: (context, user, itemDesignation) {
-              if (user == null) {
-                return Container();
+          FutureBuilder(
+            future: _users,
+            builder: (context, AsyncSnapshot<List<User>> snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                if (snapshot.hasData && snapshot.data != null) {
+                  return DropdownSearch<User>(
+                    selectedItem: selectedUser,
+                    items: snapshot.data,
+                    hint: 'Felhasználó kiválasztása',
+                    onChanged: (newUser) {
+                      setState(() {
+                        selectedUser = newUser;
+                      });
+                    },
+                    showSearchBox: true,
+                    filterFn: (user, filter) {
+                      return user.name
+                              .toLowerCase()
+                              .contains(filter.toLowerCase()) ||
+                          user.id.toString().contains(filter);
+                    },
+                    popupItemBuilder: (context, user, isSelected) {
+                      return ListTile(
+                        title: Text(user.name),
+                        subtitle: Text(user.id.toString()),
+                      );
+                    },
+                    dropdownBuilder: (context, user, itemDesignation) {
+                      if (user == null) {
+                        return Container();
+                      }
+                      return ListTile(
+                        title: Text(user.name),
+                        subtitle: Text(user.id.toString()),
+                      );
+                    },
+                  );
+                } else {
+                  //TODO
+                }
               }
-              return ListTile(
-                title: Text(user.name),
-                subtitle: Text(user.id.toString()),
-              );
+              return CircularProgressIndicator();
             },
           ),
           Visibility(
@@ -79,13 +133,12 @@ class _ModifyBalanceState extends State<ModifyBalance> {
                   onPressed: () async {
                     int? balance = int.tryParse(controller.text);
                     if (balance != null) {
-                      selectedUser!.balance += balance;
                       showDialog(
                         barrierDismissible: false,
                         context: context,
                         builder: (context) {
                           return FutureSuccessDialog(
-                            future: _updateBalance(),
+                            future: _updateBalance(balance),
                           );
                         },
                       );
@@ -103,13 +156,20 @@ class _ModifyBalanceState extends State<ModifyBalance> {
     );
   }
 
-  Future<bool> _updateBalance() async {
+  Future<bool> _updateBalance(int balance) async {
     try {
       if (!isOnline) {
         //TODO save as purchase
+        selectedUser!.balance += balance;
         await selectedUser!.update();
       } else {
-        //TODO
+        Map<String, dynamic> body = {
+          'balance_to_add': balance,
+        };
+        await httpPut(
+            context: context,
+            uri: '/user/' + selectedUser!.id.toString(),
+            body: body);
       }
       Future.delayed(Duration(milliseconds: 300))
           .then((value) => _onUpdateBalance());

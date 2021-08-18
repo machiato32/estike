@@ -1,9 +1,14 @@
+import 'dart:convert';
+
+import 'package:estike/http_handler.dart';
 import 'package:estike/models/product.dart';
 import 'package:estike/models/user.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
-import '../models/purchase.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+
+import '../config.dart';
+import '../models/purchase.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({Key? key}) : super(key: key);
@@ -19,15 +24,96 @@ class _HistoryPageState extends State<HistoryPage> {
       appBar: AppBar(
         title: Text('Előzmények'),
       ),
-      body: ListView(
-        padding: EdgeInsets.all(15),
-        children: _generatePurchases(context),
-      ),
+      body: isOnline
+          ? FutureBuilder(
+              future: _getHistory(),
+              builder: (context, AsyncSnapshot<List> snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.hasData && snapshot.data != null) {
+                    return ListView(
+                      children: _generatePurchases(context, snapshot.data![0],
+                          snapshot.data![1], snapshot.data![2]),
+                    );
+                  } else {
+                    //TODO
+                  }
+                }
+                return CircularProgressIndicator();
+              },
+            )
+          : ListView(
+              padding: EdgeInsets.all(15),
+              children: _generatePurchases(context, User.allUsers,
+                  Purchase.allPurchases, Product.allProducts),
+            ),
     );
   }
 
-  List<Widget> _generatePurchases(BuildContext context) {
-    List<Purchase> purchases = Purchase.allPurchases;
+  Future<List> _getHistory() async {
+    try {
+      http.Response response =
+          await httpGet(context: context, uri: generateUri(GetUriKeys.history));
+      Map<String, List<Map<String, dynamic>>> decoded =
+          jsonDecode(response.body);
+      List<Product> products = [];
+      if (decoded['products'] != null) {
+        for (Map<String, dynamic> decodedProduct in decoded['products']!) {
+          Product product = Product(
+            decodedProduct['name'],
+            decodedProduct['price'],
+            productTypeFromString(decodedProduct['type']),
+            id: decodedProduct['id'],
+            createdAt: DateTime.parse(decodedProduct['created_at']),
+            updatedAt: DateTime.parse(decodedProduct['updated_at']),
+          );
+          product.peopleBuying = decodedProduct['people_buying'];
+          products.add(product);
+        }
+      } else {
+        throw 'null on products';
+      }
+      List<User> users = [];
+      if (decoded['users'] != null) {
+        for (Map<String, dynamic> decodedUser in decoded['users']!) {
+          User user = User(
+            decodedUser['id'],
+            decodedUser['name'],
+            decodedUser['balance'],
+            createdAt: DateTime.parse(decodedUser['created_at']),
+            updatedAt: DateTime.parse(decodedUser['updated_at']),
+          );
+          user.productsBought = decodedUser['products_bought'];
+          users.add(user);
+        }
+      } else {
+        throw 'null on users';
+      }
+      List<Purchase> purchases = [];
+      if (decoded['purchases'] != null) {
+        for (Map<String, dynamic> decodedPurchase in decoded['purchases']!) {
+          Purchase purchase = Purchase(
+            id: decodedPurchase['id'],
+            userId: decodedPurchase['userId'],
+            productId: decodedPurchase['productId'],
+            amount: decodedPurchase['amount'],
+            createdAt: DateTime.parse(decodedPurchase['created_at']),
+            updatedAt: DateTime.parse(decodedPurchase['updated_at']),
+          );
+          purchases.add(purchase);
+        }
+      } else {
+        throw 'null on purchases';
+      }
+
+      return [users, purchases, products];
+    } catch (_) {
+      throw _;
+    }
+  }
+
+  List<Widget> _generatePurchases(BuildContext context, List<User> allUsers,
+      List<Purchase> allPurchases, List<Product> allProducts) {
+    List<Purchase> purchases = allPurchases;
     if (purchases.length != 0) {
       Map<int, List<Purchase>> groupedPurchases = {};
       Purchase lastPurchase = purchases[0];
@@ -47,8 +133,8 @@ class _HistoryPageState extends State<HistoryPage> {
       List<Widget> widgets = [];
       for (List<Purchase> purchases in groupedPurchases.values) {
         List<Widget> widgetsInColumn = [];
-        User user = User.allUsers
-            .firstWhere((element) => element.id == purchases[0].userId);
+        User user =
+            allUsers.firstWhere((element) => element.id == purchases[0].userId);
         widgetsInColumn.add(Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -79,7 +165,7 @@ class _HistoryPageState extends State<HistoryPage> {
         ));
         int summedPrice = 0;
         for (Purchase purchase in purchases) {
-          Product productBought = Product.allProducts
+          Product productBought = allProducts
               .firstWhere((element) => element.id == purchase.productId);
           summedPrice += productBought.price * purchase.amount;
           Padding row = Padding(
