@@ -1,7 +1,8 @@
+import 'package:estike/database_helper.dart';
 import 'package:estike/models/product.dart';
 import 'package:estike/models/user.dart';
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:estike/database_helper.dart';
 
 class Purchase {
   static int maxId = 0;
@@ -51,7 +52,14 @@ class Purchase {
   }
   @override
   String toString() {
-    return this.toMap().toString();
+    return {
+      'id': id,
+      'user_id': userId,
+      'product_id': productId,
+      'amount': amount,
+      'created_at': DateFormat('MM-dd - kk:mm').format(createdAt),
+      'updated_at': DateFormat('MM-dd - kk:mm').format(updatedAt),
+    }.toString();
   }
 
   Map<String, dynamic> toMap() {

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:estike/http_handler.dart';
 import 'package:estike/models/product.dart';
@@ -6,9 +7,10 @@ import 'package:estike/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-import '../config.dart';
-import '../models/purchase.dart';
+import '../../config.dart';
+import '../../models/purchase.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({Key? key}) : super(key: key);
@@ -23,6 +25,30 @@ class _HistoryPageState extends State<HistoryPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Előzmények'),
+        actions: [
+          IconButton(
+              onPressed: () async {
+                print('itt');
+                //TODO: export
+                try {
+                  if (await Permission.storage.request().isGranted) {
+                    String path = '/storage/emulated/0/Download';
+                    print(path);
+                    File file = File(path + '/users.txt');
+                    await file.writeAsString(User.allUsers.join('\n'));
+                    print('1');
+                    file = File(path + '/products.txt');
+                    await file.writeAsString(Product.allProducts.join('\n'));
+                    file = File(path + '/purchases.txt');
+                    await file.writeAsString(Purchase.allPurchases.join('\n'));
+                    print('vege');
+                  }
+                } catch (_) {
+                  throw _;
+                }
+              },
+              icon: Icon(Icons.call_merge)),
+        ],
       ),
       body: isOnline
           ? FutureBuilder(
@@ -124,7 +150,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 Duration(seconds: 1) &&
             purchase.userId == lastPurchase.userId) {
           groupedPurchases[purchaseId]!.add(purchase);
-        } else {
+        } else if (purchase.productId != -1) {
           lastPurchase = purchase;
           purchaseId++;
           groupedPurchases[purchaseId] = [lastPurchase];
@@ -165,25 +191,28 @@ class _HistoryPageState extends State<HistoryPage> {
         ));
         int summedPrice = 0;
         for (Purchase purchase in purchases) {
-          Product productBought = allProducts
-              .firstWhere((element) => element.id == purchase.productId);
-          summedPrice += productBought.price * purchase.amount;
-          Padding row = Padding(
-            padding: EdgeInsets.all(7),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: Text(
-                    purchase.amount.toString() + ' x ' + productBought.name,
-                    overflow: TextOverflow.ellipsis,
+          if (purchase.productId != -1) {
+            Product productBought = allProducts
+                .firstWhere((element) => element.id == purchase.productId);
+            summedPrice += productBought.price * purchase.amount;
+            Padding row = Padding(
+              padding: EdgeInsets.all(7),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      purchase.amount.toString() + ' x ' + productBought.name,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-                Text((purchase.amount * productBought.price).toString() + '🐪'),
-              ],
-            ),
-          );
-          widgetsInColumn.add(row);
+                  Text((purchase.amount * productBought.price).toString() +
+                      '🐪'),
+                ],
+              ),
+            );
+            widgetsInColumn.add(row);
+          }
         }
         widgetsInColumn.add(Divider());
         widgetsInColumn.add(Row(

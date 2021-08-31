@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:estike/config.dart';
+import 'package:estike/models/purchase.dart';
 import 'package:estike/models/user.dart';
 import 'package:estike/widgets/future_success_dialog.dart';
 import 'package:flutter/material.dart';
@@ -161,6 +162,8 @@ class _ModifyBalanceState extends State<ModifyBalance> {
       if (!isOnline) {
         //TODO save as purchase
         selectedUser!.balance += balance;
+        await addPurchase(selectedUser!.id, -1,
+            balance); // productId -1 means, that this was a balance modification
         await selectedUser!.update();
       } else {
         Map<String, dynamic> body = {

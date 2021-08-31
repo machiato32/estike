@@ -1,5 +1,8 @@
 Ha barmit nem tudsz ugy megoldani, ahogy en elkepzeltem, vagy ilyesmi, akkor mondd :D
 
+A balace változtatás (mikor feltesz pénzt) úgy van megoldva, hogy a purchases táblába egy (-1)-es productID-jú
+purchase lesz beleírva, a változás pedig pozitívként van kezelve (tehát ha feltesz 300 forintot, akkor +300)
+
 FONTOS: atirtam a usernek a productsBought (1) es a productnak a peopleBuying (2) properyjet, mindketto Map<int,int>
 (1) key-je a productId, value-ja, hogy abbol hanyat vett eddig osszesen
 (2) key-je a userId, value-ja, hogy az a user hanyat vett eddig osszesen

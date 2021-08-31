@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:estike/database_helper.dart';
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
+
 import 'user.dart';
 
 enum ProductType { beer, long, short, cocktail, wine, soda, meal, other }
@@ -51,7 +53,14 @@ class Product {
 
   @override
   String toString() {
-    return toMap().toString();
+    return {
+      'id': id,
+      'price': price,
+      'name': name,
+      'productType': generateProductTypeString(type),
+      'created_at': DateFormat('MM-dd - kk:mm').format(createdAt),
+      'updated_at': DateFormat('MM-dd - kk:mm').format(updatedAt),
+    }.toString();
   }
 
   void addPersonBuying(User user, int number) {

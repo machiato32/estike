@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../database_helper.dart';
@@ -33,6 +34,17 @@ class User {
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at']),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at']),
     );
+  }
+
+  @override
+  String toString() {
+    return {
+      'id': id,
+      'name': name,
+      'balance': balance,
+      'created_at': DateFormat('MM-dd - kk:mm').format(createdAt),
+      'updated_at': DateFormat('MM-dd - kk:mm').format(updatedAt),
+    }.toString();
   }
 
   Map<String, dynamic> toMap() {

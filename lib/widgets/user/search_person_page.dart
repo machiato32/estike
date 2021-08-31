@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:estike/http_handler.dart';
-import 'package:estike/widgets/history_page.dart';
 import 'package:estike/widgets/product/modify_product_page.dart';
 import 'package:estike/widgets/user/modify_balance.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 import '../../config.dart';
 import '../../models/user.dart';
+import '../history/history_page.dart';
 import 'add_user_page.dart';
 import 'user_card.dart';
 
@@ -72,7 +72,7 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
                 },
               ),
               Visibility(
-                visible: isOnline,
+                visible: true,
                 child: ListTile(
                   leading: Icon(
                     Icons.edit,
