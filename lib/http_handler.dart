@@ -107,7 +107,7 @@ Widget errorToast(String msg, BuildContext context) {
 }
 
 Duration delayTime() {
-  return Duration(milliseconds: 700);
+  return Duration(milliseconds: 300);
 }
 
 Future<http.Response> httpGet(

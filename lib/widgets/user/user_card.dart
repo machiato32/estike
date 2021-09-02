@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../product/product_page.dart';
+
 import '../../models/user.dart';
+import '../product/product_page.dart';
 
 class UserCard extends StatelessWidget {
   final Function resetTextField;
@@ -25,7 +26,6 @@ class UserCard extends StatelessWidget {
                 .push(MaterialPageRoute(
                     builder: (context) => ProductPage(user: user)))
                 .then((value) => resetTextField());
-            // resetTextField();
           },
           child: Padding(
             padding: EdgeInsets.all(8),

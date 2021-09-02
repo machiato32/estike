@@ -161,3 +161,11 @@ Map<String, dynamic> body = {
   'id': id,
 };
 await httpPost(context: context, uri: '/users', body: body);
+
+//product post
+Map<String, dynamic> body = {
+  'name': name,
+  'cost': cost,
+  'type': generateProductTypeString(type),
+};
+await httpPost(context: context, uri: '/product', body: body);

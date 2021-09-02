@@ -314,10 +314,35 @@ class _ProductPageState extends State<ProductPage> {
         ),
         _generateGrid(ProductType.beer, products),
         Text(
+          'Hosszú italok',
+          style: Theme.of(context).textTheme.headline3,
+        ),
+        _generateGrid(ProductType.long, products),
+        Text(
+          'Rövid italok',
+          style: Theme.of(context).textTheme.headline3,
+        ),
+        _generateGrid(ProductType.short, products),
+        Text(
+          'Borok',
+          style: Theme.of(context).textTheme.headline3,
+        ),
+        _generateGrid(ProductType.wine, products),
+        Text(
           'Koktélok',
           style: Theme.of(context).textTheme.headline3,
         ),
         _generateGrid(ProductType.cocktail, products),
+        Text(
+          'Üdítők',
+          style: Theme.of(context).textTheme.headline3,
+        ),
+        _generateGrid(ProductType.soda, products),
+        Text(
+          'Ételek',
+          style: Theme.of(context).textTheme.headline3,
+        ),
+        _generateGrid(ProductType.meal, products),
         SizedBox(
           height: 200,
         ),

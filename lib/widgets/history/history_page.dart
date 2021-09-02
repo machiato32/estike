@@ -140,9 +140,18 @@ class _HistoryPageState extends State<HistoryPage> {
   List<Widget> _generatePurchases(BuildContext context, List<User> allUsers,
       List<Purchase> allPurchases, List<Product> allProducts) {
     List<Purchase> purchases = allPurchases;
-    if (purchases.length != 0) {
+    if (purchases.where((element) => element.productId != -1).length != 0) {
       Map<int, List<Purchase>> groupedPurchases = {};
-      Purchase lastPurchase = purchases[0];
+      int i = 0;
+      Purchase lastPurchase = purchases[i];
+      while (lastPurchase.productId == -1) {
+        i++;
+        if (i < purchases.length) {
+          lastPurchase = purchases[i];
+        } else {
+          return [];
+        }
+      }
       int purchaseId = 0;
       groupedPurchases[purchaseId] = [];
       for (Purchase purchase in purchases) {

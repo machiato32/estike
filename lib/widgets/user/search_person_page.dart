@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:estike/http_handler.dart';
+import 'package:estike/widgets/product/add_product_page.dart';
 import 'package:estike/widgets/product/modify_product_page.dart';
 import 'package:estike/widgets/user/modify_balance.dart';
 import 'package:flutter/material.dart';
@@ -73,6 +74,21 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
               ),
               Visibility(
                 visible: true,
+                child: ListTile(
+                  leading: Icon(
+                    Icons.add,
+                  ),
+                  title: Text(
+                    "Ital hozzáadása",
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => AddProductPage()));
+                  },
+                ),
+              ),
+              Visibility(
+                visible: isOnline,
                 child: ListTile(
                   leading: Icon(
                     Icons.edit,
