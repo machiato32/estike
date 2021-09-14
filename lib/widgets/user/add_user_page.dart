@@ -15,6 +15,7 @@ class AddUserPage extends StatefulWidget {
 class _AddUserPageState extends State<AddUserPage> {
   TextEditingController nameController = TextEditingController();
   TextEditingController idController = TextEditingController();
+  TextEditingController balanceController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   var key = GlobalKey<FormState>();
 
@@ -58,7 +59,8 @@ class _AddUserPageState extends State<AddUserPage> {
                 if (id == null) {
                   return 'Csak szám lehet!';
                 }
-                if (User.allUsers.where((user) => user.id == id).isNotEmpty) { //TODO: online?
+                if (User.allUsers.where((user) => user.id == id).isNotEmpty) {
+                  //TODO: online? -> le kell kerni az osszes userId-t
                   return 'Már foglalt!';
                 }
                 return null;
@@ -70,6 +72,27 @@ class _AddUserPageState extends State<AddUserPage> {
               ],
               decoration: InputDecoration(
                 labelText: 'Kód',
+              ),
+            ),
+            TextFormField(
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              validator: (String? text) {
+                if (text == null) {
+                  return 'Jaj!';
+                }
+                int? id = int.tryParse(text);
+                if (id == null && text != '') {
+                  return 'Csak szám lehet!';
+                }
+                return null;
+              },
+              controller: balanceController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+              ],
+              decoration: InputDecoration(
+                labelText: 'Kezdőtőke',
               ),
             ),
             TextField(
@@ -90,11 +113,15 @@ class _AddUserPageState extends State<AddUserPage> {
                     if (key.currentState!.validate()) {
                       String name = nameController.text;
                       int id = int.parse(idController.text);
+                      int balance = 0;
+                      if (balanceController.text != '') {
+                        balance = int.parse(balanceController.text);
+                      }
                       showDialog(
                         context: context,
                         builder: (context) {
                           return FutureSuccessDialog(
-                            future: _postUser(name, id),
+                            future: _postUser(name, id, balance),
                           );
                         },
                       );
@@ -112,16 +139,18 @@ class _AddUserPageState extends State<AddUserPage> {
     );
   }
 
-  Future<bool> _postUser(String name, int id) async {
+  Future<bool> _postUser(String name, int id, int balance) async {
     try {
       if (isOnline) {
         Map<String, dynamic> body = {
           'name': name,
           'id': id,
+          'balance': balance,
         };
-        await httpPost(context: context, uri: '/users', body: body);
+        await httpPost(
+            context: context, uri: generateUri(GetUriKeys.users), body: body);
       } else {
-        await addUser(name, id);
+        await addUser(name, id, balance: balance);
       }
       Future.delayed(Duration(milliseconds: 300))
           .then((value) => _onPostUser());

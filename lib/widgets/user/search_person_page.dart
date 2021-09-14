@@ -73,7 +73,7 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
                 },
               ),
               Visibility(
-                visible: true,
+                visible: isOnline,
                 child: ListTile(
                   leading: Icon(
                     Icons.add,
@@ -120,7 +120,41 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
         appBar: AppBar(
           title: Text(widget.title),
         ),
-        body: _generateBody(),
+        body: ListView(
+          shrinkWrap: true,
+          padding: EdgeInsets.all(10),
+          children: [
+            TextField(
+              onChanged: (value) {
+                setState(() {
+                  searchWord = value;
+                });
+              },
+              controller: controller,
+              decoration: InputDecoration(
+                labelText: 'Keresés',
+              ),
+            ),
+            isOnline
+                ? FutureBuilder(
+                    future: _users,
+                    builder: (context, AsyncSnapshot<List<User>> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        if (snapshot.hasData && snapshot.data != null) {
+                          return _generateGrid(snapshot.data!);
+                        } else {
+                          return Text(snapshot.error.toString());
+                        }
+                      }
+                      return Center(child: CircularProgressIndicator());
+                    },
+                  )
+                : _generateGrid(User.allUsers),
+            SizedBox(
+              height: 200,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -145,59 +179,19 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
     });
   }
 
-  Widget _generateBody() {
-    return ListView(
-      shrinkWrap: true,
-      padding: EdgeInsets.all(10),
-      children: [
-        TextField(
-          onChanged: (value) {
-            setState(() {
-              searchWord = value;
-            });
-          },
-          controller: controller,
-          decoration: InputDecoration(
-            labelText: 'Keresés',
-          ),
-        ),
-        isOnline
-            ? FutureBuilder(
-                future: _users,
-                builder: (context, AsyncSnapshot<List<User>> snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.hasData && snapshot.data != null) {
-                      return _generateGrid(snapshot.data!);
-                    } else {
-                      //TODO
-                    }
-                  }
-                  return Center(child: CircularProgressIndicator());
-                },
-              )
-            : _generateGrid(User.allUsers),
-        SizedBox(
-          height: 200,
-        ),
-      ],
-    );
-  }
-
   Future<List<User>> _getUsers() async {
     try {
       http.Response response =
           await httpGet(context: context, uri: generateUri(GetUriKeys.users));
-      List<Map<String, dynamic>> decoded = jsonDecode(response.body);
+      dynamic decoded = jsonDecode(utf8.decode(response.bodyBytes));
       List<User> users = [];
       for (Map<String, dynamic> decodedUser in decoded) {
         User user = User(
           decodedUser['id'],
           decodedUser['name'],
           decodedUser['balance'],
-          createdAt: DateTime.parse(decodedUser['created_at']),
-          updatedAt: DateTime.parse(decodedUser['updated_at']),
         );
-        user.productsBought = decodedUser['products_bought'];
+        // user.productsBought = decodedUser['products_bought'];
         users.add(user);
       }
       return users;

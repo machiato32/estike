@@ -34,17 +34,18 @@ class _ModifyBalanceState extends State<ModifyBalance> {
       if (isOnline) {
         http.Response response =
             await httpGet(context: context, uri: generateUri(GetUriKeys.users));
-        List<Map<String, dynamic>> decoded = jsonDecode(response.body);
+        print(response.body);
+        List<dynamic> decoded = jsonDecode(response.body);
         List<User> users = [];
         for (Map<String, dynamic> decodedUser in decoded) {
           User user = User(
             decodedUser['id'],
             decodedUser['name'],
             decodedUser['balance'],
-            createdAt: DateTime.parse(decodedUser['created_at']),
-            updatedAt: DateTime.parse(decodedUser['updated_at']),
+            // createdAt: DateTime.parse(decodedUser['created_at']),
+            // updatedAt: DateTime.parse(decodedUser['updated_at']),
           );
-          user.productsBought = decodedUser['products_bought'];
+          // user.productsBought = decodedUser['products_bought'];
           users.add(user);
         }
         return users;
@@ -104,6 +105,7 @@ class _ModifyBalanceState extends State<ModifyBalance> {
                     },
                   );
                 } else {
+                  return Text(snapshot.error.toString());
                   //TODO
                 }
               }
@@ -167,11 +169,14 @@ class _ModifyBalanceState extends State<ModifyBalance> {
         await selectedUser!.update();
       } else {
         Map<String, dynamic> body = {
-          'balance_to_add': balance,
+          'customerId': selectedUser!.id,
+          'amount': balance,
+          'happenedAt': DateTime.now().toIso8601String(),
         };
-        await httpPut(
+        print(json.encode(body));
+        await httpPost(
             context: context,
-            uri: '/user/' + selectedUser!.id.toString(),
+            uri: generateUri(GetUriKeys.transaction),
             body: body);
       }
       Future.delayed(Duration(milliseconds: 300))

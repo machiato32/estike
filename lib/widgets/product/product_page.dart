@@ -26,6 +26,24 @@ class _ProductPageState extends State<ProductPage> {
   int nodeNum = 0;
   Map<Product, int> productsToBuy = {};
   bool small = false;
+  Future<List<Product>>? _products;
+
+  @override
+  void initState() {
+    if (isOnline) {
+      _products = null;
+      _products = _getProducts();
+    }
+    super.initState();
+  }
+
+  void resetAll() {
+    if (isOnline) {
+      _products = null;
+      _products = _getProducts();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     small = MediaQuery.of(context).size.width <= 1200;
@@ -40,7 +58,7 @@ class _ProductPageState extends State<ProductPage> {
                 Expanded(
                   child: isOnline
                       ? FutureBuilder(
-                          future: _getProducts(),
+                          future: _products,
                           builder:
                               (context, AsyncSnapshot<List<Product>> snapshot) {
                             if (snapshot.connectionState ==
@@ -48,7 +66,7 @@ class _ProductPageState extends State<ProductPage> {
                               if (snapshot.hasData && snapshot.data != null) {
                                 return _generateLeftUpperPart(snapshot.data!);
                               } else {
-                                //TODO
+                                return Text(snapshot.error.toString());
                               }
                             }
                             return CircularProgressIndicator();
@@ -81,6 +99,7 @@ class _ProductPageState extends State<ProductPage> {
                       height: MediaQuery.of(context).size.height,
                       child: isOnline
                           ? FutureBuilder(
+                              future: _products,
                               builder: (context,
                                   AsyncSnapshot<List<Product>> snapshot) {
                                 if (snapshot.connectionState ==
@@ -90,7 +109,7 @@ class _ProductPageState extends State<ProductPage> {
                                     return _generateLeftUpperPart(
                                         snapshot.data!);
                                   } else {
-                                    //TODO
+                                    return Text(snapshot.error.toString());
                                   }
                                 }
                                 return CircularProgressIndicator();
@@ -118,9 +137,9 @@ class _ProductPageState extends State<ProductPage> {
 
   Future<List<Product>> _getProducts() async {
     try {
-      http.Response response =
-          await httpGet(context: context, uri: generateUri(GetUriKeys.drinks));
-      List<Map<String, dynamic>> decoded = jsonDecode(response.body);
+      http.Response response = await httpGet(
+          context: context, uri: generateUri(GetUriKeys.products));
+      dynamic decoded = jsonDecode(response.body);
       List<Product> products = [];
       for (Map<String, dynamic> decodedProduct in decoded) {
         Product product = Product(
@@ -128,10 +147,8 @@ class _ProductPageState extends State<ProductPage> {
           decodedProduct['price'],
           productTypeFromString(decodedProduct['type']),
           id: decodedProduct['id'],
-          createdAt: DateTime.parse(decodedProduct['created_at']),
-          updatedAt: DateTime.parse(decodedProduct['updated_at']),
         );
-        product.peopleBuying = decodedProduct['people_buying'];
+        // product.peopleBuying = decodedProduct['people_buying'];
         products.add(product);
       }
       return products;
@@ -262,10 +279,17 @@ class _ProductPageState extends State<ProductPage> {
     try {
       if (isOnline) {
         Map<String, dynamic> body = {
-          'user_id': widget.user.id,
-          'product_ids': productsToBuy.keys.map((e) => e.id).toList(),
+          'customerId': widget.user.id,
+          'products': productsToBuy.keys.map((product) {
+            return {
+              'productId': product.id,
+              'quantity': productsToBuy[product],
+            };
+          }).toList(),
+          'happenedAt': DateTime.now().toIso8601String(),
         };
-        await httpPost(context: context, uri: '/purchases', body: body);
+        print(body);
+        await httpPost(context: context, uri: '/purchase', body: body);
       } else {
         for (Product product in productsToBuy.keys) {
           widget.user.addBoughProduct(product, number: productsToBuy[product]!);

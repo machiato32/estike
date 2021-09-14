@@ -154,7 +154,7 @@ ProductType productTypeFromString(String s) {
       return ProductType.beer;
     case 'long':
       return ProductType.long;
-    case 'short':
+    case 'shortdrink':
       return ProductType.short;
     case 'cocktail':
       return ProductType.cocktail;

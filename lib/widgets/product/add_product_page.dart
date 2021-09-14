@@ -104,7 +104,6 @@ class _AddProductPageState extends State<AddProductPage> {
               child: ElevatedButton(
                 onPressed: () {
                   if (passwordController.text == masterPassword) {
-                    print('asd');
                     if (key.currentState!.validate() &&
                         typeDropdownValue != null) {
                       String name = nameController.text;
@@ -137,16 +136,19 @@ class _AddProductPageState extends State<AddProductPage> {
       if (isOnline) {
         Map<String, dynamic> body = {
           'name': name,
-          'cost': cost,
+          'price': cost,
           'type': generateProductTypeString(type),
         };
-        await httpPost(context: context, uri: '/product', body: body);
+        await httpPost(
+            context: context,
+            uri: generateUri(GetUriKeys.products),
+            body: body);
       } else {
         Product product = Product(name, cost, type);
         Product.allProducts.add(product);
-        Future.delayed(delayTime()).then((value) => _onPostProduct());
         await product.insert();
       }
+      Future.delayed(delayTime()).then((value) => _onPostProduct());
       return true;
     } catch (_) {
       throw _;

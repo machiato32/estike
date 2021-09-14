@@ -8,7 +8,8 @@ import '../config.dart';
 
 enum GetUriKeys {
   users,
-  drinks,
+  products,
+  transaction,
   history,
   groupHasGuests,
   groupCurrent,
@@ -32,8 +33,9 @@ enum GetUriKeys {
   paymentsDate
 }
 List<String> getUris = [
-  '/users',
-  '/drinks',
+  '/customers',
+  '/products',
+  '/customers/transactions',
   '/history',
   '/groups/{}/has_guests',
   '/groups/{}',
@@ -113,14 +115,17 @@ Duration delayTime() {
 Future<http.Response> httpGet(
     {required BuildContext context, required String uri}) async {
   try {
-    Map<String, String> header = {"Content-Type": "application/json"};
+    Map<String, String> header = {
+      "Content-Type": "application/json",
+      "Api-Key": "estike1895",
+    };
     http.Response response =
         await http.get(Uri.parse(APP_URL + uri), headers: header);
     if (response.statusCode < 300 && response.statusCode >= 200) {
       return response;
     } else {
       Map<String, dynamic> error = jsonDecode(response.body);
-      throw error['error'];
+      throw error['errorMessage'];
     }
   } on FormatException {
     throw 'format_exception';
@@ -139,10 +144,12 @@ Future<http.Response> httpPost(
   try {
     Map<String, String> header = {
       "Content-Type": "application/json",
+      "Api-Key": "estike1895",
     };
     http.Response response;
     if (body != null) {
       String bodyEncoded = json.encode(body);
+      print(bodyEncoded);
       response = await http.post(Uri.parse(APP_URL + uri),
           headers: header, body: bodyEncoded);
     } else {
@@ -153,13 +160,14 @@ Future<http.Response> httpPost(
       return response;
     } else {
       Map<String, dynamic> error = jsonDecode(response.body);
-      throw error['error'];
+      throw error['errorMessage'];
     }
   } on FormatException {
     throw 'format_exception';
   } on SocketException {
     throw 'cannot_connect';
   } catch (_) {
+    print(_);
     throw _;
   }
 }
@@ -172,6 +180,7 @@ Future<http.Response> httpPut(
   try {
     Map<String, String> header = {
       "Content-Type": "application/json",
+      "Api-Key": "estike1895",
     };
     http.Response response;
     if (body != null) {
@@ -186,7 +195,8 @@ Future<http.Response> httpPut(
       return response;
     } else {
       Map<String, dynamic> error = jsonDecode(response.body);
-      throw error['error'];
+      print(error);
+      throw error['errorMessage'];
     }
   } on FormatException {
     throw 'format_exception';
@@ -204,6 +214,7 @@ Future<http.Response> httpDelete(
   try {
     Map<String, String> header = {
       "Content-Type": "application/json",
+      "Api-Key": "estike1895",
     };
     http.Response response =
         await http.delete(Uri.parse(APP_URL + uri), headers: header);
@@ -212,7 +223,7 @@ Future<http.Response> httpDelete(
       return response;
     } else {
       Map<String, dynamic> error = jsonDecode(response.body);
-      throw error['error'];
+      throw error['errorMessage'];
     }
   } on FormatException {
     throw 'format_exception';

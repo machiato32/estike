@@ -27,8 +27,8 @@ class _ModifyProductPageState extends State<ModifyProductPage> {
   Future<List<Product>> _getProducts() async {
     //this page is only available in online mode
     try {
-      http.Response response =
-          await httpGet(context: context, uri: generateUri(GetUriKeys.drinks));
+      http.Response response = await httpGet(
+          context: context, uri: generateUri(GetUriKeys.products));
       List<Map<String, dynamic>> decoded = jsonDecode(response.body);
       List<Product> products = [];
       for (Map<String, dynamic> decodedProduct in decoded) {
