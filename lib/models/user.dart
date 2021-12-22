@@ -42,8 +42,8 @@ class User {
       'id': id,
       'name': name,
       'balance': balance,
-      'created_at': DateFormat('MM-dd - kk:mm').format(createdAt),
-      'updated_at': DateFormat('MM-dd - kk:mm').format(updatedAt),
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
     }.toString();
   }
 
@@ -105,8 +105,8 @@ Future<List<User>> queryUsers() async {
   return users.map((e) => User.fromMap(e)).toList();
 }
 
-Future<bool> addUser(String name, int id, {int balance = 0}) async {
-  User user = User(id, name, balance);
+Future<bool> addUser(String name, int id, {int balance = 0, DateTime? createdAt, DateTime? updatedAt}) async {
+  User user = User(id, name, balance, createdAt: createdAt, updatedAt: updatedAt);
   await user.insert();
   User.allUsers.add(user);
   return true;

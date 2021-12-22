@@ -121,11 +121,13 @@ Future<http.Response> httpGet(
     };
     http.Response response =
         await http.get(Uri.parse(APP_URL + uri), headers: header);
+    // print(response.body);
     if (response.statusCode < 300 && response.statusCode >= 200) {
       return response;
     } else {
-      Map<String, dynamic> error = jsonDecode(response.body);
-      throw error['errorMessage'];
+      // Map<String, dynamic> error = jsonDecode(response.body);
+      // throw error['errors'];
+      throw response.body;
     }
   } on FormatException {
     throw 'format_exception';
@@ -144,23 +146,29 @@ Future<http.Response> httpPost(
   try {
     Map<String, String> header = {
       "Content-Type": "application/json",
-      "Api-Key": "estike1895",
     };
     http.Response response;
+    print('1');
     if (body != null) {
+      print('2');
       String bodyEncoded = json.encode(body);
-      print(bodyEncoded);
+      // print(bodyEncoded);
       response = await http.post(Uri.parse(APP_URL + uri),
           headers: header, body: bodyEncoded);
     } else {
+      print('3');
       response = await http.post(Uri.parse(APP_URL + uri), headers: header);
     }
 
     if (response.statusCode < 300 && response.statusCode >= 200) {
+      print('4');
       return response;
     } else {
+      print('5');
+      
+      print(response.body);
       Map<String, dynamic> error = jsonDecode(response.body);
-      throw error['errorMessage'];
+      throw error['errors'];
     }
   } on FormatException {
     throw 'format_exception';

@@ -1,21 +1,16 @@
 import 'dart:convert';
 
 import 'package:estike/http_handler.dart';
-import 'package:estike/widgets/product/add_product_page.dart';
-import 'package:estike/widgets/product/modify_product_page.dart';
-import 'package:estike/widgets/user/modify_balance.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../../config.dart';
 import '../../models/user.dart';
-import '../history/history_page.dart';
-import 'add_user_page.dart';
 import 'user_card.dart';
 
 class SearchPersonPage extends StatefulWidget {
-  SearchPersonPage({Key? key, required this.title}) : super(key: key);
-  final String title;
+  final double width;
+  SearchPersonPage({Key? key, required this.width}) : super(key: key);
 
   @override
   _SearchPersonPageState createState() => _SearchPersonPageState();
@@ -32,129 +27,40 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
       onTap: () {
         FocusScope.of(context).unfocus();
       },
-      child: Scaffold(
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              DrawerHeader(
-                child: Center(
-                  child: Text(
-                    'Estike',
-                    style: Theme.of(context).textTheme.headline3,
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: Icon(
-                  Icons.attach_money,
-                ),
-                title: Text(
-                  "Egyenleg szerkesztése",
-                ),
-                onTap: () {
-                  Navigator.of(context)
-                      .push(MaterialPageRoute(
-                          builder: (context) => ModifyBalance()))
-                      .then((value) => resetAll());
-                },
-              ),
-              ListTile(
-                leading: Icon(
-                  Icons.person_add,
-                ),
-                title: Text(
-                  "Felhasználó hozzáadása",
-                ),
-                onTap: () {
-                  Navigator.of(context)
-                      .push(MaterialPageRoute(
-                          builder: (context) => AddUserPage()))
-                      .then((value) => resetAll());
-                },
-              ),
-              Visibility(
-                visible: isOnline,
-                child: ListTile(
-                  leading: Icon(
-                    Icons.add,
-                  ),
-                  title: Text(
-                    "Ital hozzáadása",
-                  ),
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => AddProductPage()));
-                  },
-                ),
-              ),
-              Visibility(
-                visible: isOnline,
-                child: ListTile(
-                  leading: Icon(
-                    Icons.edit,
-                  ),
-                  title: Text(
-                    "Italok szerkesztése",
-                  ),
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => ModifyProductPage()));
-                  },
-                ),
-              ),
-              ListTile(
-                leading: Icon(
-                  Icons.history,
-                ),
-                title: Text(
-                  "Előzmények",
-                ),
-                onTap: () {
-                  Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => HistoryPage()));
-                },
-              ),
-            ],
+      child: ListView(
+        shrinkWrap: true,
+        padding: EdgeInsets.all(10),
+        children: [
+          TextField(
+            onChanged: (value) {
+              setState(() {
+                searchWord = value;
+              });
+            },
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: 'Keresés',
+            ),
           ),
-        ),
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
-        body: ListView(
-          shrinkWrap: true,
-          padding: EdgeInsets.all(10),
-          children: [
-            TextField(
-              onChanged: (value) {
-                setState(() {
-                  searchWord = value;
-                });
-              },
-              controller: controller,
-              decoration: InputDecoration(
-                labelText: 'Keresés',
-              ),
-            ),
-            isOnline
-                ? FutureBuilder(
-                    future: _users,
-                    builder: (context, AsyncSnapshot<List<User>> snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        if (snapshot.hasData && snapshot.data != null) {
-                          return _generateGrid(snapshot.data!);
-                        } else {
-                          return Text(snapshot.error.toString());
-                        }
+          isOnline
+              ? FutureBuilder(
+                  future: _users,
+                  builder: (context, AsyncSnapshot<List<User>> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      if (snapshot.hasData && snapshot.data != null) {
+                        return _generateGrid(snapshot.data!);
+                      } else {
+                        return Text(snapshot.error.toString());
                       }
-                      return Center(child: CircularProgressIndicator());
-                    },
-                  )
-                : _generateGrid(User.allUsers),
-            SizedBox(
-              height: 200,
-            ),
-          ],
-        ),
+                    }
+                    return Center(child: CircularProgressIndicator());
+                  },
+                )
+              : _generateGrid(User.allUsers),
+          SizedBox(
+            height: 200,
+          ),
+        ],
       ),
     );
   }
@@ -216,7 +122,7 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
           .toList();
     }
     if (users.length == 0) return Container();
-    double width = MediaQuery.of(context).size.width;
+    double width = widget.width;
     bool small = false;
     int count = (width / 200).floor();
     if (width < 400) {

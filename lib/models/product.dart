@@ -6,7 +6,7 @@ import 'package:sqflite/sqflite.dart';
 
 import 'user.dart';
 
-enum ProductType { beer, long, short, cocktail, wine, soda, meal, other }
+enum ProductType { beer, long, shot, cocktail, wine, soda, meal, other }
 
 class Product {
   static List<Product> allProducts = [];
@@ -112,7 +112,7 @@ String humanReadableProductType(ProductType type) {
       return 'Sör';
     case ProductType.long:
       return 'Long drink';
-    case ProductType.short:
+    case ProductType.shot:
       return 'Rövid ital';
     case ProductType.cocktail:
       return 'Koktél';
@@ -133,8 +133,8 @@ String generateProductTypeString(ProductType type) {
       return 'beer';
     case ProductType.long:
       return 'long';
-    case ProductType.short:
-      return 'short';
+    case ProductType.shot:
+      return 'shott';
     case ProductType.cocktail:
       return 'cocktail';
     case ProductType.other:
@@ -154,8 +154,8 @@ ProductType productTypeFromString(String s) {
       return ProductType.beer;
     case 'long':
       return ProductType.long;
-    case 'shortdrink':
-      return ProductType.short;
+    case 'shot':
+      return ProductType.shot;
     case 'cocktail':
       return ProductType.cocktail;
     case 'wine':
@@ -183,8 +183,8 @@ Future<List<Product>> queryProducts() async {
 }
 
 Future<bool> addProduct(String name, int price, ProductType type,
-    {String? imageURL}) async {
-  Product product = Product(name, price, type, imageURL: imageURL);
+    {int? id, String? imageURL, DateTime? createdAt, DateTime? updatedAt}) async {
+  Product product = Product(name, price, type, imageURL: imageURL, id: id, createdAt: createdAt, updatedAt: updatedAt);
   await product.insert();
   Product.allProducts.add(product);
   return true;

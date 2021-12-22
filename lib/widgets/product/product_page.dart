@@ -21,10 +21,9 @@ class ProductPage extends StatefulWidget {
 }
 
 class _ProductPageState extends State<ProductPage> {
-  ScrollController controller = ScrollController();
   List<FocusNode> nodes = [];
   int nodeNum = 0;
-  Map<Product, int> productsToBuy = {};
+  Map<Product, double> productsToBuy = {};
   bool small = false;
   Future<List<Product>>? _products;
 
@@ -89,8 +88,8 @@ class _ProductPageState extends State<ProductPage> {
             )
           : Table(
               columnWidths: {
-                0: FractionColumnWidth(0.7),
-                1: FractionColumnWidth(0.3),
+                0: FractionColumnWidth(0.6),
+                1: FractionColumnWidth(0.4),
               },
               children: [
                 TableRow(
@@ -157,6 +156,21 @@ class _ProductPageState extends State<ProductPage> {
     }
   }
 
+  void halfProductOnList(Product product){
+    print('asd');
+    setState(() {
+      if (productsToBuy.containsKey(product)) {
+        if(productsToBuy[product]!<=0.5){
+          productsToBuy.remove(product);
+        }else{
+          productsToBuy[product] = productsToBuy[product]! - 1/2;
+        }
+      } else {
+        productsToBuy[product] = 0.5;
+      }
+    });
+  }
+
   void addProductToList(Product product) {
     setState(() {
       if (productsToBuy.containsKey(product)) {
@@ -170,14 +184,14 @@ class _ProductPageState extends State<ProductPage> {
   void removeProductFromList(Product product) {
     setState(() {
       productsToBuy[product] = productsToBuy[product]! - 1;
-      if (productsToBuy[product] == 0) {
+      if (productsToBuy.containsKey(product) && productsToBuy[product]! <= 0) {
         productsToBuy.remove(product);
       }
     });
   }
 
-  int sum(Map<Product, int> products) {
-    int sum = 0;
+  double sum(Map<Product, double> products) {
+    double sum = 0;
     for (Product product in products.keys) {
       sum += product.price * products[product]!;
     }
@@ -186,6 +200,7 @@ class _ProductPageState extends State<ProductPage> {
 
   Widget _generateRightLower() {
     return ListView(
+      controller: ScrollController(),
       padding: EdgeInsets.all(10),
       shrinkWrap: true,
       children: [
@@ -256,6 +271,7 @@ class _ProductPageState extends State<ProductPage> {
           (product) => ProductLedgerItem(
             addProductToList: addProductToList,
             removeProductFromList: removeProductFromList,
+            halfProductOnList: halfProductOnList,
             product: product,
             itemNum: productsToBuy[product]!,
           ),
@@ -292,12 +308,12 @@ class _ProductPageState extends State<ProductPage> {
         await httpPost(context: context, uri: '/purchase', body: body);
       } else {
         for (Product product in productsToBuy.keys) {
-          widget.user.addBoughProduct(product, number: productsToBuy[product]!);
-          product.addPersonBuying(widget.user, productsToBuy[product]!);
+          widget.user.addBoughProduct(product, number: productsToBuy[product]!.ceil());
+          product.addPersonBuying(widget.user, productsToBuy[product]!.ceil());
           await addPurchase(
               widget.user.id, product.id, productsToBuy[product]!);
         }
-        widget.user.balance -= sum(productsToBuy);
+        widget.user.balance -= sum(productsToBuy).ceil();
         await widget.user.update();
       }
       Future.delayed(Duration(milliseconds: 300))
@@ -315,7 +331,7 @@ class _ProductPageState extends State<ProductPage> {
 
   Widget _generateLeftUpperPart(List<Product> products) {
     return ListView(
-      controller: controller,
+      controller: ScrollController(),
       padding: EdgeInsets.all(10),
       shrinkWrap: true,
       children: [
@@ -346,7 +362,7 @@ class _ProductPageState extends State<ProductPage> {
           'Rövid italok',
           style: Theme.of(context).textTheme.headline3,
         ),
-        _generateGrid(ProductType.short, products),
+        _generateGrid(ProductType.shot, products),
         Text(
           'Borok',
           style: Theme.of(context).textTheme.headline3,
@@ -393,7 +409,7 @@ class _ProductPageState extends State<ProductPage> {
     if (products.length == 0) return Container();
     double width = MediaQuery.of(context).size.width;
     if (width > 1200) {
-      width = 7 * width / 10;
+      width = 6 * width / 10;
     }
     bool small = false;
     int count = (width / 200).floor();

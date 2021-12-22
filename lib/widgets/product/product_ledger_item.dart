@@ -4,25 +4,27 @@ import '../../models/product.dart';
 class ProductLedgerItem extends StatelessWidget {
   final Function(Product product) removeProductFromList;
   final Function(Product product) addProductToList;
+  final Function(Product product) halfProductOnList;
   final Product product;
-  final int itemNum;
+  final double itemNum;
   const ProductLedgerItem({
     required this.product,
     required this.itemNum,
     required this.removeProductFromList,
     required this.addProductToList,
+    required this.halfProductOnList,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(10),
+      padding: EdgeInsets.fromLTRB(10, 10, 0, 10),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Flexible(
             child: Text(
-              itemNum.toString() + ' x ' + product.name,
+              (itemNum%1==0?itemNum.toStringAsFixed(0):itemNum.toString()) + ' x ' + product.name,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.headline6,
             ),
@@ -36,6 +38,9 @@ class ProductLedgerItem extends StatelessWidget {
                 },
                 icon: Icon(Icons.remove),
               ),
+              TextButton(onPressed: (){
+                halfProductOnList(product);
+              }, child: Text('½', style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),),),
               IconButton(
                 onPressed: () {
                   addProductToList(product);
@@ -45,7 +50,7 @@ class ProductLedgerItem extends StatelessWidget {
               Container(
                 width: 90,
                 child: Text(
-                  (product.price * itemNum).toString() + '🐪',
+                  (product.price * itemNum).ceil().toString() + '🐪',
                   style: Theme.of(context).textTheme.headline5,
                 ),
               ),

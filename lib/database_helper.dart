@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static final _databaseVersion = 2;
@@ -17,12 +19,34 @@ class DatabaseHelper {
 
   ///Initialize database. Has to be called before using the database.
   Future<void> initDatabase() async {
-    String path = join(await getDatabasesPath(), 'estike_database.db');
-    _database = await openDatabase(
-      path,
-      version: _databaseVersion,
-      onCreate: _onCreate,
-    );
+    String? path;
+    
+    // deleteDatabase(join(await getDatabasesPath(), 'estike_database.db'));
+    if(Platform.isWindows || Platform.isLinux){
+      sqfliteFfiInit();
+      path= join((await getApplicationDocumentsDirectory()).path, 'estike_database.db');
+      databaseFactory = databaseFactoryFfi;
+    }else if(Platform.isAndroid || Platform.isIOS){
+      path = join(await getDatabasesPath(), 'estike_database.db');
+    }
+    if(path!=null){
+      _database = await databaseFactory.openDatabase(
+      path, options: OpenDatabaseOptions(version: _databaseVersion, onCreate: _onCreate));
+    }
+    
+  }
+
+  Future deleteDb() async {
+    String? path;
+    if(Platform.isWindows || Platform.isLinux){
+      path= join((await getApplicationDocumentsDirectory()).path, 'estike_database.db');
+    }else if(Platform.isAndroid || Platform.isIOS){
+      path = join(await getDatabasesPath(), 'estike_database.db');
+    }
+    if(path!=null){
+      await databaseFactory.deleteDatabase(path);
+    }
+    
   }
 
   // SQL code to create the database table
@@ -36,7 +60,7 @@ class DatabaseHelper {
     await db.execute('''CREATE TABLE purchases(id INTEGER PRIMARY KEY, 
         product_id INTEGER NOT NULL,
         user_id INTEGER NOT NULL, 
-        amount INTEGER, 
+        amount REAL, 
         updated_at INTEGER,
         created_at INTEGER,
         FOREIGN KEY (product_id) REFERENCES products (id) 

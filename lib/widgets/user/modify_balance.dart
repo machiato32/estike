@@ -136,6 +136,7 @@ class _ModifyBalanceState extends State<ModifyBalance> {
                   onPressed: () async {
                     int? balance = int.tryParse(controller.text);
                     if (balance != null) {
+                      print(selectedUser);
                       showDialog(
                         barrierDismissible: false,
                         context: context,
@@ -165,7 +166,7 @@ class _ModifyBalanceState extends State<ModifyBalance> {
         //TODO save as purchase
         selectedUser!.balance += balance;
         await addPurchase(selectedUser!.id, -1,
-            balance); // productId -1 means, that this was a balance modification
+            balance.toDouble()); // productId -1 means, that this was a balance modification
         await selectedUser!.update();
       } else {
         Map<String, dynamic> body = {

@@ -10,7 +10,7 @@ class Purchase {
   late int id;
   int userId;
   int productId;
-  int amount;
+  double amount;
   late DateTime createdAt;
   late DateTime updatedAt;
   Purchase({
@@ -57,8 +57,8 @@ class Purchase {
       'user_id': userId,
       'product_id': productId,
       'amount': amount,
-      'created_at': DateFormat('MM-dd - kk:mm').format(createdAt),
-      'updated_at': DateFormat('MM-dd - kk:mm').format(updatedAt),
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': createdAt.toIso8601String(),
     }.toString();
   }
 
@@ -112,12 +112,20 @@ Future<void> initPurchases() async {
   }
   // print(Purchase.allPurchases);
   // print(Purchase.maxId);
-  for (Purchase pruchase in Purchase.allPurchases) {
+  for (Purchase purchase in Purchase.allPurchases) {
     try {
-      User user =
-          User.allUsers.firstWhere((element) => element.id == pruchase.userId);
+      addPeopleBuying(purchase);
+    } on StateError {
+      print('No user or product found');
+      //TODO
+    }
+  }
+}
+void addPeopleBuying(Purchase purchase) {
+  User user =
+          User.allUsers.firstWhere((element) => element.id == purchase.userId);
       Product product = Product.allProducts
-          .firstWhere((element) => element.id == pruchase.productId);
+          .firstWhere((element) => element.id == purchase.productId);
       if (user.productsBought.containsKey(product.id)) {
         user.productsBought[product.id] = user.productsBought[product.id]! + 1;
       } else {
@@ -128,13 +136,7 @@ Future<void> initPurchases() async {
       } else {
         product.peopleBuying[user.id] = 1;
       }
-    } on StateError {
-      print('No user or product found');
-      //TODO
-    }
-  }
 }
-
 Future<List<Purchase>> queryProductsUsers() async {
   try {
     Database db = await DatabaseHelper.instance.database;
@@ -145,11 +147,14 @@ Future<List<Purchase>> queryProductsUsers() async {
   }
 }
 
-Future<bool> addPurchase(int userId, int productId, int amount) async {
+Future<bool> addPurchase(int userId, int productId, double amount) async {
   try {
     Purchase purchase =
         Purchase(userId: userId, productId: productId, amount: amount);
     Purchase.allPurchases.add(purchase);
+    if(productId!=-1){
+      addPeopleBuying(purchase);
+    }
     await purchase.insert();
     return true;
   } catch (_) {

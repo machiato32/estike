@@ -1,12 +1,15 @@
 import 'package:estike/models/purchase.dart';
+import 'package:estike/widgets/main_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 import 'database_helper.dart';
 import 'models/product.dart';
 import 'models/user.dart';
-import 'widgets/user/search_person_page.dart';
+import 'package:estike/config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +39,13 @@ void main() async {
     await initProducts();
     await initUsers();
     await initPurchases();
-    // // deleteDatabase(join(await getDatabasesPath(), 'estike_database.db'));
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if(prefs.getString('last_updated')==null){
+      prefs.setString('last_updated', DateTime.parse('2021-01-01 00:00:00').toIso8601String());
+    }else{
+      lastUpdatedAt=prefs.getString('last_updated')!;
+    }
+
   }
 
   runApp(MyApp());
@@ -58,7 +67,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => SearchPersonPage(title: 'Estike számla'),
+        '/': (context) => MainPage(),
       },
     );
   }

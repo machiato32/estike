@@ -203,7 +203,7 @@ class _HistoryPageState extends State<HistoryPage> {
           if (purchase.productId != -1) {
             Product productBought = allProducts
                 .firstWhere((element) => element.id == purchase.productId);
-            summedPrice += productBought.price * purchase.amount;
+            summedPrice += (productBought.price * purchase.amount).ceil();
             Padding row = Padding(
               padding: EdgeInsets.all(7),
               child: Row(

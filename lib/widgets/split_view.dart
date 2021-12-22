@@ -15,8 +15,8 @@ class _SplitViewState extends State<SplitView> {
     if (width > 1200) {
       return Table(
         columnWidths: {
-          0: FractionColumnWidth(0.7),
-          1: FractionColumnWidth(0.3),
+          0: FractionColumnWidth(0.2),
+          1: FractionColumnWidth(0.7),
         },
         children: [
           TableRow(
