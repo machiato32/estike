@@ -144,7 +144,7 @@ class _AddProductPageState extends State<AddProductPage> {
             uri: generateUri(GetUriKeys.products),
             body: body);
       } else {
-        Product product = Product(name, cost, type);
+        Product product = Product(name, cost, type, enabled: true);
         Product.allProducts.add(product);
         await product.insert();
       }

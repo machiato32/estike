@@ -91,7 +91,9 @@ class _AddUserPageState extends State<AddUserPage> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
               ],
+              
               decoration: InputDecoration(
+                hintText: '0',
                 labelText: 'Kezdőtőke',
               ),
             ),

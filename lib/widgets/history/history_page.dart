@@ -91,6 +91,7 @@ class _HistoryPageState extends State<HistoryPage> {
             id: decodedProduct['id'],
             createdAt: DateTime.parse(decodedProduct['created_at']),
             updatedAt: DateTime.parse(decodedProduct['updated_at']),
+            enabled: decodedProduct['deleted_at']==null
           );
           product.peopleBuying = decodedProduct['people_buying'];
           products.add(product);
@@ -169,7 +170,7 @@ class _HistoryPageState extends State<HistoryPage> {
       for (List<Purchase> purchases in groupedPurchases.values) {
         List<Widget> widgetsInColumn = [];
         User user =
-            allUsers.firstWhere((element) => element.id == purchases[0].userId);
+            allUsers.firstWhere((element) => element.id == purchases[0].userId, orElse: () => User(-1, "Készpénz", 0));
         widgetsInColumn.add(Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -183,10 +184,10 @@ class _HistoryPageState extends State<HistoryPage> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Text(
+                  user.id!=-1?Text(
                     ' - ' + user.id.toString() + '   ',
                     style: Theme.of(context).textTheme.headline6,
-                  ),
+                  ):Container(),
                 ],
               ),
             ),

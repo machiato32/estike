@@ -19,9 +19,10 @@ class Product {
   late DateTime createdAt;
   late DateTime updatedAt;
   Map<int, int> peopleBuying = {}; // userId, timesBought
+  bool enabled;
 
   Product(this.name, this.price, this.type,
-      {int? id, this.imageURL, DateTime? createdAt, DateTime? updatedAt}) {
+      {int? id, this.imageURL, DateTime? createdAt, DateTime? updatedAt, required this.enabled}) {
     if (id == null) {
       this.id = maxId;
       maxId++;
@@ -48,6 +49,7 @@ class Product {
       id: map['id'],
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at']),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at']),
+      enabled: map['enabled']==1
     );
   }
 
@@ -60,6 +62,7 @@ class Product {
       'productType': generateProductTypeString(type),
       'created_at': DateFormat('MM-dd - kk:mm').format(createdAt),
       'updated_at': DateFormat('MM-dd - kk:mm').format(updatedAt),
+      'enabled': enabled?1:0
     }.toString();
   }
 
@@ -79,6 +82,7 @@ class Product {
       'productType': generateProductTypeString(type),
       'created_at': createdAt.millisecondsSinceEpoch,
       'updated_at': updatedAt.millisecondsSinceEpoch,
+      'enabled': enabled?1:0
     };
   }
 
@@ -183,17 +187,17 @@ Future<List<Product>> queryProducts() async {
 }
 
 Future<bool> addProduct(String name, int price, ProductType type,
-    {int? id, String? imageURL, DateTime? createdAt, DateTime? updatedAt}) async {
-  Product product = Product(name, price, type, imageURL: imageURL, id: id, createdAt: createdAt, updatedAt: updatedAt);
+    {int? id, String? imageURL, DateTime? createdAt, DateTime? updatedAt, required bool enabled}) async {
+  Product product = Product(name, price, type, imageURL: imageURL, id: id, createdAt: createdAt, updatedAt: updatedAt, enabled: enabled);
   await product.insert();
   Product.allProducts.add(product);
   return true;
 }
 
 Future<bool> updateProduct(
-    int id, String name, int price, ProductType type) async {
+    int id, String name, int price, ProductType type, bool enabled) async {
   Product.allProducts.removeWhere((element) => element.id == id);
-  Product product = Product(name, price, type, id: id);
+  Product product = Product(name, price, type, id: id, enabled: enabled);
   Product.allProducts.add(product);
   await product.update();
   return true;

@@ -40,7 +40,7 @@ class ProductLedgerItem extends StatelessWidget {
               ),
               TextButton(onPressed: (){
                 halfProductOnList(product);
-              }, child: Text('½', style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),),),
+              }, child: Text('½', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),),),
               IconButton(
                 onPressed: () {
                   addProductToList(product);

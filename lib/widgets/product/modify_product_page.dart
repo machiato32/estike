@@ -39,6 +39,7 @@ class _ModifyProductPageState extends State<ModifyProductPage> {
           id: decodedProduct['id'],
           createdAt: DateTime.parse(decodedProduct['created_at']),
           updatedAt: DateTime.parse(decodedProduct['updated_at']),
+          enabled: decodedProduct['enabled']
         );
         product.peopleBuying = decodedProduct['people_buying'];
         products.add(product);

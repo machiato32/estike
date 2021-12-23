@@ -106,7 +106,7 @@ class Purchase {
 }
 
 Future<void> initPurchases() async {
-  Purchase.allPurchases = await queryProductsUsers();
+  Purchase.allPurchases = await queryPurchases();
   if (Purchase.allPurchases.length != 0) {
     Purchase.maxId = Purchase.allPurchases.last.id + 1;
   }
@@ -123,21 +123,21 @@ Future<void> initPurchases() async {
 }
 void addPeopleBuying(Purchase purchase) {
   User user =
-          User.allUsers.firstWhere((element) => element.id == purchase.userId);
-      Product product = Product.allProducts
-          .firstWhere((element) => element.id == purchase.productId);
-      if (user.productsBought.containsKey(product.id)) {
-        user.productsBought[product.id] = user.productsBought[product.id]! + 1;
-      } else {
-        user.productsBought[product.id] = 1;
-      }
-      if (product.peopleBuying.containsKey(user)) {
-        product.peopleBuying[user.id] = product.peopleBuying[user.id]! + 1;
-      } else {
-        product.peopleBuying[user.id] = 1;
-      }
+      User.allUsers.firstWhere((element) => element.id == purchase.userId);
+  Product product = Product.allProducts
+      .firstWhere((element) => element.id == purchase.productId);
+  if (user.productsBought.containsKey(product.id)) {
+    user.productsBought[product.id] = user.productsBought[product.id]! + 1;
+  } else {
+    user.productsBought[product.id] = 1;
+  }
+  if (product.peopleBuying.containsKey(user)) {
+    product.peopleBuying[user.id] = product.peopleBuying[user.id]! + 1;
+  } else {
+    product.peopleBuying[user.id] = 1;
+  }
 }
-Future<List<Purchase>> queryProductsUsers() async {
+Future<List<Purchase>> queryPurchases() async {
   try {
     Database db = await DatabaseHelper.instance.database;
     List<Map<String, dynamic>> productsUsers = await db.query('purchases');
@@ -152,7 +152,7 @@ Future<bool> addPurchase(int userId, int productId, double amount) async {
     Purchase purchase =
         Purchase(userId: userId, productId: productId, amount: amount);
     Purchase.allPurchases.add(purchase);
-    if(productId!=-1){
+    if(productId!=-1 && userId!=-1){
       addPeopleBuying(purchase);
     }
     await purchase.insert();

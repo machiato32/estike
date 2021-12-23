@@ -146,6 +146,7 @@ class _ProductPageState extends State<ProductPage> {
           decodedProduct['price'],
           productTypeFromString(decodedProduct['type']),
           id: decodedProduct['id'],
+          enabled: decodedProduct['deleted_at']==null
         );
         // product.peopleBuying = decodedProduct['people_buying'];
         products.add(product);
@@ -157,7 +158,6 @@ class _ProductPageState extends State<ProductPage> {
   }
 
   void halfProductOnList(Product product){
-    print('asd');
     setState(() {
       if (productsToBuy.containsKey(product)) {
         if(productsToBuy[product]!<=0.5){
@@ -210,20 +210,20 @@ class _ProductPageState extends State<ProductPage> {
             child: ElevatedButton(
               onPressed: () async {
                 if (productsToBuy.keys.length != 0) {
-                  if (sum(productsToBuy) <= widget.user.balance) {
+                  // if (sum(productsToBuy) <= widget.user.balance) {
                     showDialog(
                       barrierDismissible: false,
                       context: context,
                       builder: (context) {
-                        return FutureSuccessDialog(future: _postPurchases());
+                        return FutureSuccessDialog(future: _postPurchases(usesCash: widget.user.id==-1));
                       },
                     );
-                  }
+                  // }
                 }
               },
               child: Icon(
                 Icons.send,
-                color: Colors.white,
+                color: Colors.black,
               ),
             ),
           ),
@@ -237,7 +237,7 @@ class _ProductPageState extends State<ProductPage> {
                 children: [
                   Icon(
                     Icons.account_circle_sharp,
-                    color: Theme.of(context).primaryColor,
+                    color: Theme.of(context).colorScheme.primary,
                     size: 35,
                   ),
                   Flexible(
@@ -291,7 +291,7 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
-  Future<bool> _postPurchases() async {
+  Future<bool> _postPurchases({bool usesCash=false}) async {
     try {
       if (isOnline) {
         Map<String, dynamic> body = {
@@ -307,14 +307,22 @@ class _ProductPageState extends State<ProductPage> {
         print(body);
         await httpPost(context: context, uri: '/purchase', body: body);
       } else {
-        for (Product product in productsToBuy.keys) {
-          widget.user.addBoughProduct(product, number: productsToBuy[product]!.ceil());
-          product.addPersonBuying(widget.user, productsToBuy[product]!.ceil());
-          await addPurchase(
-              widget.user.id, product.id, productsToBuy[product]!);
+        if(usesCash){
+          for (Product product in productsToBuy.keys) {
+            await addPurchase(
+                  widget.user.id, product.id, productsToBuy[product]!);
+          }
+        }else{
+          for (Product product in productsToBuy.keys) {
+            widget.user.addBoughProduct(product, number: productsToBuy[product]!.ceil());
+            product.addPersonBuying(widget.user, productsToBuy[product]!.ceil());
+            await addPurchase(
+                widget.user.id, product.id, productsToBuy[product]!);
+          }
+          widget.user.balance -= sum(productsToBuy).ceil();
+          await widget.user.update();
         }
-        widget.user.balance -= sum(productsToBuy).ceil();
-        await widget.user.update();
+        
       }
       Future.delayed(Duration(milliseconds: 300))
           .then((value) => _onPostPurchases());
@@ -330,6 +338,16 @@ class _ProductPageState extends State<ProductPage> {
   }
 
   Widget _generateLeftUpperPart(List<Product> products) {
+    double width = MediaQuery.of(context).size.width;
+    if (width > 1200) {
+      width = 6 * width / 10;
+    }
+    bool small = false;
+    int count = (width / 200).floor();
+    if (width < 400) {
+      small = true;
+      count = (width / 150).floor();
+    }
     return ListView(
       controller: ScrollController(),
       padding: EdgeInsets.all(10),
@@ -344,7 +362,7 @@ class _ProductPageState extends State<ProductPage> {
                 'Ajánlott',
                 style: Theme.of(context).textTheme.headline3,
               ),
-              _generateGrid(null, products),
+              _generateGrid(null, products, count),
             ],
           ),
         ),
@@ -352,37 +370,131 @@ class _ProductPageState extends State<ProductPage> {
           'Sörök',
           style: Theme.of(context).textTheme.headline3,
         ),
-        _generateGrid(ProductType.beer, products),
+        _generateGrid(ProductType.beer, products, count),
         Text(
           'Hosszú italok',
           style: Theme.of(context).textTheme.headline3,
         ),
-        _generateGrid(ProductType.long, products),
+        _generateGrid(ProductType.long, products, count),
         Text(
           'Rövid italok',
           style: Theme.of(context).textTheme.headline3,
         ),
-        _generateGrid(ProductType.shot, products),
+        _generateGrid(ProductType.shot, products, count),
         Text(
           'Borok',
           style: Theme.of(context).textTheme.headline3,
         ),
-        _generateGrid(ProductType.wine, products),
+        _generateGrid(ProductType.wine, products, count),
         Text(
           'Koktélok',
           style: Theme.of(context).textTheme.headline3,
         ),
-        _generateGrid(ProductType.cocktail, products),
+        _generateGrid(ProductType.cocktail, products, count),
         Text(
           'Üdítők',
           style: Theme.of(context).textTheme.headline3,
         ),
-        _generateGrid(ProductType.soda, products),
+        _generateGrid(ProductType.soda, products, count),
         Text(
           'Ételek',
           style: Theme.of(context).textTheme.headline3,
         ),
-        _generateGrid(ProductType.meal, products),
+        _generateGrid(ProductType.meal, products, count),
+        Visibility(
+          visible: widget.user.id!=-1,
+          child: AspectRatio(
+            aspectRatio: count.toDouble()*2, 
+            child: Card(
+              color: Theme.of(context).colorScheme.primary,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(30),
+                onTap: () {
+                  TextEditingController controller = TextEditingController();
+                  showDialog(
+                    context: context, 
+                    builder: (context){
+                      return Dialog(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('Vonj le valamennyit!', style: Theme.of(context).textTheme.headline5,),
+                              TextFormField(
+                                controller: controller,
+                                decoration: InputDecoration(
+                                  labelText: 'Összeg',
+                                ),
+                                validator: (String? text){
+                                  if(text==null || text.isEmpty){
+                                    return 'Kérlek írd be az összeget!';
+                                  }
+                                  if(double.tryParse(text)==null){
+                                    return 'Kérlek írj számot!';
+                                  }
+                                  return null;
+                                },
+                                autovalidateMode: AutovalidateMode.onUserInteraction,
+                              ),
+                              SizedBox(height: 10,),
+                              ElevatedButton(
+                                child: Icon(Icons.send),
+                                onPressed: (){
+                                  if(controller.text!='' && int.tryParse(controller.text) != null){
+                                    double amount = double.parse(controller.text);
+                                    widget.user.balance-=amount.ceil();
+                                    addPurchase(widget.user.id, -1, -amount);
+                                    Navigator.pop(context);
+                                    Navigator.pop(context);
+                                  }
+                                },
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                  );
+                },
+                child: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Stack(
+                    children: [
+                      Material(
+                        color: Colors.transparent,
+                      ),
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Egyéni",
+                              style: small
+                                  ? Theme.of(context).textTheme.headline5
+                                  : Theme.of(context).textTheme.headline4!.copyWith(color: Colors.black),
+                              textAlign: TextAlign.center,
+                            ),
+                            Flexible(
+                              child: Icon(
+                                Icons.attach_money,
+                                color: Colors.black,
+                                size: small
+                                    ? 20
+                                    : 30,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
         SizedBox(
           height: 200,
         ),
@@ -390,7 +502,7 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
-  Widget _generateGrid(ProductType? type, List<Product> allProducts) {
+  Widget _generateGrid(ProductType? type, List<Product> allProducts, int count) {
     List<Product> products = [];
     if (type == null) {
       var mapEntries = widget.user.productsBought.entries.toList()
@@ -407,16 +519,7 @@ class _ProductPageState extends State<ProductPage> {
     }
 
     if (products.length == 0) return Container();
-    double width = MediaQuery.of(context).size.width;
-    if (width > 1200) {
-      width = 6 * width / 10;
-    }
-    bool small = false;
-    int count = (width / 200).floor();
-    if (width < 400) {
-      small = true;
-      count = (width / 150).floor();
-    }
+    
     return GridView.count(
       physics: NeverScrollableScrollPhysics(),
       shrinkWrap: true,

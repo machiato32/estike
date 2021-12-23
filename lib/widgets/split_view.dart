@@ -16,7 +16,7 @@ class _SplitViewState extends State<SplitView> {
       return Table(
         columnWidths: {
           0: FractionColumnWidth(0.2),
-          1: FractionColumnWidth(0.7),
+          1: FractionColumnWidth(0.8),
         },
         children: [
           TableRow(

@@ -57,7 +57,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
+        brightness: Brightness.dark,
         primarySwatch: Colors.orange,
+        scaffoldBackgroundColor: Colors.grey[900],
+        appBarTheme: AppBarTheme(
+          color: Colors.orange,
+          foregroundColor: Colors.black,
+        ),
         cardTheme: CardTheme(
           margin: EdgeInsets.all(5),
           shape: RoundedRectangleBorder(

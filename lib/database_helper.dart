@@ -53,7 +53,7 @@ class DatabaseHelper {
   Future _onCreate(Database db, int version) async {
     await db.execute(
         '''CREATE TABLE products(id INTEGER PRIMARY KEY, name TEXT NOT NULL, price INTEGER, productType TEXT, updated_at INTEGER,
-        created_at INTEGER)''');
+        created_at INTEGER, enabled INTEGER)''');
     await db.execute(
         '''CREATE TABLE users(id INTEGER PRIMARY KEY, name TEXT NOT NULL, balance INT NOT NULL, updated_at INTEGER,
         created_at INTEGER)''');
