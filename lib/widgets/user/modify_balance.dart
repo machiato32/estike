@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:estike/config.dart';
 import 'package:estike/models/purchase.dart';
 import 'package:estike/models/user.dart';
 import 'package:estike/widgets/future_success_dialog.dart';
+import 'package:estike/widgets/user/user_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -21,7 +23,9 @@ class ModifyBalance extends StatefulWidget {
 class _ModifyBalanceState extends State<ModifyBalance> {
   User? selectedUser;
   TextEditingController controller = TextEditingController();
+  TextEditingController plusController = TextEditingController();
   late Future<List<User>>? _users;
+  String searchWord='';
   @override
   void initState() {
     _users = null;
@@ -59,7 +63,6 @@ class _ModifyBalanceState extends State<ModifyBalance> {
 
   @override
   Widget build(BuildContext context) {
-    print(selectedUser == null);
     return Scaffold(
       appBar: AppBar(
         title: Text("Egyenleg módosítása"),
@@ -72,38 +75,159 @@ class _ModifyBalanceState extends State<ModifyBalance> {
             builder: (context, AsyncSnapshot<List<User>> snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
                 if (snapshot.hasData && snapshot.data != null) {
-                  return DropdownSearch<User>(
-                    selectedItem: selectedUser,
-                    items: snapshot.data,
-                    hint: 'Felhasználó kiválasztása',
-                    onChanged: (newUser) {
-                      setState(() {
-                        selectedUser = newUser;
-                      });
-                    },
-                    showSearchBox: true,
-                    filterFn: (user, filter) {
-                      return user.name
-                              .toLowerCase()
-                              .contains(filter.toLowerCase()) ||
-                          user.id.toString().contains(filter);
-                    },
-                    popupItemBuilder: (context, user, isSelected) {
-                      return ListTile(
-                        title: Text(user.name),
-                        subtitle: Text(user.id.toString()),
-                      );
-                    },
-                    dropdownBuilder: (context, user, itemDesignation) {
-                      if (user == null) {
-                        return Container();
-                      }
-                      return ListTile(
-                        title: Text(user.name),
-                        subtitle: Text(user.id.toString()),
-                      );
-                    },
+                  List<User> users = snapshot.data!;
+                  if (searchWord != "") {
+                    users = users
+                        .where((element) =>
+                            element.id.toString().contains(searchWord) ||
+                            element.name.toLowerCase().contains(searchWord.toLowerCase()))
+                        .toList();
+                  }
+                  //sorts based on number of items bought
+                  users.sort((user1, user2) => -user1.productsBought.values
+                      .toList()
+                      .fold(0, (previous, current) => (previous as int) + current)
+                      .compareTo(user2.productsBought.values.toList().fold(
+                          0,
+                          (previous, current) =>
+                              previous + current))); 
+                  if (users.length == 0) return Container();
+                  double width = MediaQuery.of(context).size.width;
+                  bool small = false;
+                  int count = (width / 200).floor();
+                  if (width < 400) {
+                    small = true;
+                    count = (width / 150).floor();
+                  }
+                  int usersLength=max(users.length,(count/2).ceil());
+                  
+                  count=min(count, usersLength);
+                  return Column(
+                    children: [
+                      TextField(
+                        onChanged: (value) {
+                          setState(() {
+                            searchWord = value;
+                          });
+                        },
+                        controller: controller,
+                        decoration: InputDecoration(
+                          labelText: 'Keresés',
+                        ),
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: count,
+                        ), 
+                        itemCount: min(users.length, 30),
+                        itemBuilder: (BuildContext context, int index){
+                          return UserCard(
+                            user: users[index],
+                            small: small,
+                            onTap: (context){
+                              setState(() {
+                                selectedUser = users[index];
+                                showDialog(
+                                  context: context,
+                                  builder: (context){
+                                    return Dialog(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(selectedUser!.name, style: Theme.of(context).textTheme.headline6),
+                                            SizedBox(
+                                              height: 15,
+                                            ),
+                                            TextField(
+                                              controller: plusController,
+                                              decoration: InputDecoration(
+                                                labelText: 'Plusz',
+                                              ),
+                                              keyboardType: TextInputType.number,
+                                              inputFormatters: [
+                                                FilteringTextInputFormatter.allow(RegExp('[0-9]')),
+                                              ],
+                                            ),
+                                            SizedBox(
+                                              height: 10,
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () async {
+                                                int? balance = int.tryParse(plusController.text);
+                                                if (balance != null) {
+                                                  print(selectedUser);
+                                                  showDialog(
+                                                    barrierDismissible: false,
+                                                    context: context,
+                                                    builder: (context) {
+                                                      return FutureSuccessDialog(
+                                                        future: _updateBalance(balance),
+                                                      );
+                                                    },
+                                                  );
+                                                } else {
+                                                  //TODO
+                                                }
+                                              },
+                                              child: Icon(Icons.send),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                );
+                              });
+                            },
+                            resetTextField: () {
+                              setState(() {
+                                searchWord = '';
+                              });
+                            },
+                          );
+                        }
+                      ),
+                    ],
                   );
+                  // return DropdownSearch<User>(
+                  //   selectedItem: selectedUser,
+                  //   items: snapshot.data,
+                  //   hint: 'Felhasználó kiválasztása',
+                  //   onChanged: (newUser) {
+                  //     setState(() {
+                  //       selectedUser = newUser;
+                  //     });
+                  //   },
+                  //   showSearchBox: true,
+                  //   filterFn: (user, filter) {
+                  //     return user.name
+                  //             .toLowerCase()
+                  //             .contains(filter.toLowerCase()) ||
+                  //         user.id.toString().contains(filter);
+                  //   },
+                  //   popupItemBuilder: (context, user, isSelected) {
+                  //     return ListTile(
+                  //       title: Text(user.name),
+                  //       subtitle: Text(user.id.toString()),
+                  //     );
+                  //   },
+                  //   dropdownBuilder: (context, user, itemDesignation) {
+                  //     if (user == null) {
+                  //       return Container();
+                  //     }
+                  //     return ListTile(
+                  //       title: Text(user.name),
+                  //       subtitle: Text(user.id.toString()),
+                  //     );
+                  //   },
+                  // );
                 } else {
                   return Text(snapshot.error.toString());
                   //TODO
@@ -112,49 +236,49 @@ class _ModifyBalanceState extends State<ModifyBalance> {
               return CircularProgressIndicator();
             },
           ),
-          Visibility(
-            visible: selectedUser != null,
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 15,
-                ),
-                TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    labelText: 'Plusz',
-                  ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp('[0-9]')),
-                  ],
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    int? balance = int.tryParse(controller.text);
-                    if (balance != null) {
-                      print(selectedUser);
-                      showDialog(
-                        barrierDismissible: false,
-                        context: context,
-                        builder: (context) {
-                          return FutureSuccessDialog(
-                            future: _updateBalance(balance),
-                          );
-                        },
-                      );
-                    } else {
-                      //TODO
-                    }
-                  },
-                  child: Icon(Icons.send),
-                ),
-              ],
-            ),
-          ),
+          // Visibility(
+          //   visible: selectedUser != null,
+          //   child: Column(
+          //     children: [
+          //       SizedBox(
+          //         height: 15,
+          //       ),
+          //       TextField(
+          //         controller: controller,
+          //         decoration: InputDecoration(
+          //           labelText: 'Plusz',
+          //         ),
+          //         keyboardType: TextInputType.number,
+          //         inputFormatters: [
+          //           FilteringTextInputFormatter.allow(RegExp('[0-9]')),
+          //         ],
+          //       ),
+          //       SizedBox(
+          //         height: 10,
+          //       ),
+          //       ElevatedButton(
+          //         onPressed: () async {
+          //           int? balance = int.tryParse(controller.text);
+          //           if (balance != null) {
+          //             print(selectedUser);
+          //             showDialog(
+          //               barrierDismissible: false,
+          //               context: context,
+          //               builder: (context) {
+          //                 return FutureSuccessDialog(
+          //                   future: _updateBalance(balance),
+          //                 );
+          //               },
+          //             );
+          //           } else {
+          //             //TODO
+          //           }
+          //         },
+          //         child: Icon(Icons.send),
+          //       ),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
     );
@@ -189,6 +313,7 @@ class _ModifyBalanceState extends State<ModifyBalance> {
   }
 
   void _onUpdateBalance() {
+    Navigator.pop(context);
     Navigator.pop(context);
     Navigator.pop(context);
   }

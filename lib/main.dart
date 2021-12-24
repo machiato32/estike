@@ -64,6 +64,12 @@ class MyApp extends StatelessWidget {
           color: Colors.orange,
           foregroundColor: Colors.black,
         ),
+        dialogTheme: DialogTheme(
+          backgroundColor: Colors.grey[800],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
         cardTheme: CardTheme(
           margin: EdgeInsets.all(5),
           shape: RoundedRectangleBorder(

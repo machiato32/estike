@@ -4,6 +4,7 @@ import 'package:estike/models/purchase.dart';
 import 'package:estike/widgets/future_success_dialog.dart';
 import 'package:estike/widgets/product/product_ledger_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
 import '../../config.dart';
@@ -26,6 +27,17 @@ class _ProductPageState extends State<ProductPage> {
   Map<Product, double> productsToBuy = {};
   bool small = false;
   Future<List<Product>>? _products;
+
+  Map<ProductType, bool> whichToShow = {
+    ProductType.beer:false,
+    ProductType.wine:false,
+    ProductType.cocktail:false,
+    ProductType.long:false,
+    ProductType.shot:false,
+    ProductType.other:false,
+    ProductType.meal:false,
+    ProductType.soda:false,    
+  };
 
   @override
   void initState() {
@@ -114,7 +126,7 @@ class _ProductPageState extends State<ProductPage> {
                                 return CircularProgressIndicator();
                               },
                             )
-                          : _generateLeftUpperPart(Product.allProducts),
+                          : _generateLeftUpperPart(Product.allProducts.where((element) => element.enabled).toList()),
                     ),
                     Container(
                       height: MediaQuery.of(context).size.height,
@@ -342,7 +354,7 @@ class _ProductPageState extends State<ProductPage> {
     if (width > 1200) {
       width = 6 * width / 10;
     }
-    bool small = false;
+    small = false;
     int count = (width / 200).floor();
     if (width < 400) {
       small = true;
@@ -366,42 +378,127 @@ class _ProductPageState extends State<ProductPage> {
             ],
           ),
         ),
-        Text(
-          'Sörök',
-          style: Theme.of(context).textTheme.headline3,
+        _productTypeWidget(products, count, ProductType.beer),
+        _productTypeWidget(products, count, ProductType.long),
+        _productTypeWidget(products, count, ProductType.shot),
+        _productTypeWidget(products, count, ProductType.wine),
+        _productTypeWidget(products, count, ProductType.cocktail),
+        _productTypeWidget(products, count, ProductType.soda),
+        _productTypeWidget(products, count, ProductType.meal),        
+        _otherButton(count),
+        SizedBox(
+          height: 200,
         ),
-        _generateGrid(ProductType.beer, products, count),
-        Text(
-          'Hosszú italok',
-          style: Theme.of(context).textTheme.headline3,
+      ],
+    );
+  }
+  Widget _productTypeWidget(List<Product> products, int count, ProductType type) {
+    String name='';
+    switch(type){
+      case ProductType.beer:
+        name='Sörök';
+        break;
+      case ProductType.long:
+        name='Hosszú italok';
+        break;
+      case ProductType.shot:
+        name='Rövid italok';
+        break;
+      case ProductType.wine:
+        name='Borok';
+        break;
+      case ProductType.cocktail:
+        name='Koktélok';
+        break;
+      case ProductType.soda:
+        name='Üdítők';
+        break;
+      case ProductType.meal:
+        name='Ételek';
+        break;
+      case ProductType.other:
+        name='Egyebek';
+        break;
+    }
+    return Column(
+      children: [
+        TextButton(
+          onPressed: (){
+            setState(() {
+              whichToShow[type]=!whichToShow[type]!;
+            });
+          },
+          child: 
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                name,
+                style: Theme.of(context).textTheme.headline3,
+              ),
+              Icon(
+                whichToShow[type]!?Icons.expand_less:Icons.expand_more,
+                size: 50,
+              )
+            ],
+          ),
         ),
-        _generateGrid(ProductType.long, products, count),
-        Text(
-          'Rövid italok',
-          style: Theme.of(context).textTheme.headline3,
-        ),
-        _generateGrid(ProductType.shot, products, count),
-        Text(
-          'Borok',
-          style: Theme.of(context).textTheme.headline3,
-        ),
-        _generateGrid(ProductType.wine, products, count),
-        Text(
-          'Koktélok',
-          style: Theme.of(context).textTheme.headline3,
-        ),
-        _generateGrid(ProductType.cocktail, products, count),
-        Text(
-          'Üdítők',
-          style: Theme.of(context).textTheme.headline3,
-        ),
-        _generateGrid(ProductType.soda, products, count),
-        Text(
-          'Ételek',
-          style: Theme.of(context).textTheme.headline3,
-        ),
-        _generateGrid(ProductType.meal, products, count),
         Visibility(
+          visible: whichToShow[type]!,
+          child: _generateGrid(type, products, count)
+        ),
+      ],
+    );
+  }
+
+  Widget _otherButtonDialog(TextEditingController controller){
+    return Dialog(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Vonj le valamennyit!', style: Theme.of(context).textTheme.headline5,),
+            TextFormField(
+              controller: controller,
+              decoration: InputDecoration(
+                labelText: 'Összeg',
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+              ],
+              validator: (String? text){
+                if(text==null || text.isEmpty){
+                  return 'Kérlek írd be az összeget!';
+                }
+                if(double.tryParse(text)==null){
+                  return 'Kérlek írj számot!';
+                }
+                return null;
+              },
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+            ),
+            SizedBox(height: 10,),
+            ElevatedButton(
+              child: Icon(Icons.send),
+              onPressed: (){
+                if(controller.text!='' && int.tryParse(controller.text) != null){
+                  double amount = double.parse(controller.text);
+                  widget.user.balance-=amount.ceil();
+                  addPurchase(widget.user.id, -1, -amount);
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                }
+              },
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _otherButton(int count){
+    return Visibility(
           visible: widget.user.id!=-1,
           child: AspectRatio(
             aspectRatio: count.toDouble()*2, 
@@ -414,46 +511,7 @@ class _ProductPageState extends State<ProductPage> {
                   showDialog(
                     context: context, 
                     builder: (context){
-                      return Dialog(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text('Vonj le valamennyit!', style: Theme.of(context).textTheme.headline5,),
-                              TextFormField(
-                                controller: controller,
-                                decoration: InputDecoration(
-                                  labelText: 'Összeg',
-                                ),
-                                validator: (String? text){
-                                  if(text==null || text.isEmpty){
-                                    return 'Kérlek írd be az összeget!';
-                                  }
-                                  if(double.tryParse(text)==null){
-                                    return 'Kérlek írj számot!';
-                                  }
-                                  return null;
-                                },
-                                autovalidateMode: AutovalidateMode.onUserInteraction,
-                              ),
-                              SizedBox(height: 10,),
-                              ElevatedButton(
-                                child: Icon(Icons.send),
-                                onPressed: (){
-                                  if(controller.text!='' && int.tryParse(controller.text) != null){
-                                    double amount = double.parse(controller.text);
-                                    widget.user.balance-=amount.ceil();
-                                    addPurchase(widget.user.id, -1, -amount);
-                                    Navigator.pop(context);
-                                    Navigator.pop(context);
-                                  }
-                                },
-                              )
-                            ],
-                          ),
-                        ),
-                      );
+                      return _otherButtonDialog(controller);
                     }
                   );
                 },
@@ -478,7 +536,7 @@ class _ProductPageState extends State<ProductPage> {
                             ),
                             Flexible(
                               child: Icon(
-                                Icons.attach_money,
+                                Icons.construction,
                                 color: Colors.black,
                                 size: small
                                     ? 20
@@ -494,12 +552,7 @@ class _ProductPageState extends State<ProductPage> {
               ),
             ),
           ),
-        ),
-        SizedBox(
-          height: 200,
-        ),
-      ],
-    );
+        );
   }
 
   Widget _generateGrid(ProductType? type, List<Product> allProducts, int count) {

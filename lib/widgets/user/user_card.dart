@@ -5,14 +5,26 @@ import '../product/product_page.dart';
 
 class UserCard extends StatelessWidget {
   final Function resetTextField;
+  late Function onTap;
   final User user;
   final bool small;
-  const UserCard(
+  UserCard(
       {required this.user,
       Key? key,
       this.small = false,
-      required this.resetTextField})
-      : super(key: key);
+      required this.resetTextField, Function? onTap})
+      : super(key: key){
+        if(onTap == null){
+          this.onTap = (context){
+            Navigator.of(context)
+              .push(MaterialPageRoute(
+                  builder: (context) => ProductPage(user: user)))
+              .then((value) => resetTextField());
+          };
+        }else{
+          this.onTap=onTap;
+        }
+      }
 
   @override
   Widget build(BuildContext context) {
@@ -22,10 +34,7 @@ class UserCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(30),
           onTap: () {
-            Navigator.of(context)
-                .push(MaterialPageRoute(
-                    builder: (context) => ProductPage(user: user)))
-                .then((value) => resetTextField());
+            onTap(context);
           },
           child: Padding(
             padding: EdgeInsets.all(8),

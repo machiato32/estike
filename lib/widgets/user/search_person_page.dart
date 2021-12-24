@@ -132,7 +132,7 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
       small = true;
       count = (width / 150).floor();
     }
-    int usersLength=max(users.length,3);
+    int usersLength=max(users.length,(count/2).ceil());
     
     count=min(count, usersLength);
     return Column(
@@ -172,7 +172,7 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
                             ),
                             Flexible(
                               child: Icon(
-                                Icons.money,
+                                Icons.attach_money,
                                 color: Colors.black,
                                 size: small
                                     ? 20
