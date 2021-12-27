@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:estike/models/purchase.dart';
 import 'package:estike/widgets/future_success_dialog.dart';
 import 'package:estike/widgets/product/product_ledger_item.dart';
+import 'package:estike/widgets/user/modify_balance_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -62,6 +63,18 @@ class _ProductPageState extends State<ProductPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Ital kiválasztása'),
+        actions: widget.user.id==-1?[]:[
+          TextButton(
+            child: Row(
+              children: [
+                Text("Feltöltés", style: TextStyle(color: Colors.black, fontSize: 20),),
+                SizedBox(width: 5,),
+                Icon(Icons.payments, color: Colors.black,),
+              ],
+            ),
+            onPressed: () => showDialog(context: context, builder: (context) => ModifyBalanceDialog(selectedUser: widget.user)),
+          ),
+        ],
       ),
       body: small
           ? Column(
