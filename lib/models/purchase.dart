@@ -85,6 +85,7 @@ class Purchase {
   }
 
   Future<int> update() async {
+    this.updatedAt=DateTime.now();
     Database db = await DatabaseHelper.instance.database;
     this.updatedAt = DateTime.now();
     return await db.update(

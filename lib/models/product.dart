@@ -10,6 +10,7 @@ enum ProductType { beer, long, shot, cocktail, wine, soda, meal, other }
 
 class Product {
   static List<Product> allProducts = [];
+  static const int modifiedBalanceId = -1;
   static int maxId = 0;
   late int id;
   int price;
@@ -22,7 +23,11 @@ class Product {
   bool enabled;
 
   Product(this.name, this.price, this.type,
-      {int? id, this.imageURL, DateTime? createdAt, DateTime? updatedAt, required this.enabled}) {
+      {int? id,
+      this.imageURL,
+      DateTime? createdAt,
+      DateTime? updatedAt,
+      required this.enabled}) {
     if (id == null) {
       this.id = maxId;
       maxId++;
@@ -43,14 +48,11 @@ class Product {
 
   factory Product.fromMap(Map<String, dynamic> map) {
     return Product(
-      map['name'],
-      map['price'],
-      productTypeFromString(map['productType']),
-      id: map['id'],
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at']),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at']),
-      enabled: map['enabled']==1
-    );
+        map['name'], map['price'], productTypeFromString(map['productType']),
+        id: map['id'],
+        createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at']),
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at']),
+        enabled: map['enabled'] == 1);
   }
 
   @override
@@ -62,7 +64,7 @@ class Product {
       'productType': generateProductTypeString(type),
       'created_at': DateFormat('MM-dd - kk:mm').format(createdAt),
       'updated_at': DateFormat('MM-dd - kk:mm').format(updatedAt),
-      'enabled': enabled?1:0
+      'enabled': enabled ? 1 : 0
     }.toString();
   }
 
@@ -82,7 +84,7 @@ class Product {
       'productType': generateProductTypeString(type),
       'created_at': createdAt.millisecondsSinceEpoch,
       'updated_at': updatedAt.millisecondsSinceEpoch,
-      'enabled': enabled?1:0
+      'enabled': enabled ? 1 : 0
     };
   }
 
@@ -98,6 +100,7 @@ class Product {
   }
 
   Future<int> update() async {
+    this.updatedAt = DateTime.now();
     Database db = await DatabaseHelper.instance.database;
     return await db.update('products', this.toMap(),
         where: 'id = ?', whereArgs: [this.id]);
@@ -138,7 +141,7 @@ String generateProductTypeString(ProductType type) {
     case ProductType.long:
       return 'long';
     case ProductType.shot:
-      return 'shott';
+      return 'shot';
     case ProductType.cocktail:
       return 'cocktail';
     case ProductType.other:
@@ -183,12 +186,22 @@ Future<void> initProducts() async {
 Future<List<Product>> queryProducts() async {
   Database db = await DatabaseHelper.instance.database;
   List<Map<String, dynamic>> products = await db.query('products');
+  print(products);
   return products.map((e) => Product.fromMap(e)).toList();
 }
 
 Future<bool> addProduct(String name, int price, ProductType type,
-    {int? id, String? imageURL, DateTime? createdAt, DateTime? updatedAt, required bool enabled}) async {
-  Product product = Product(name, price, type, imageURL: imageURL, id: id, createdAt: createdAt, updatedAt: updatedAt, enabled: enabled);
+    {int? id,
+    String? imageURL,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    required bool enabled}) async {
+  Product product = Product(name, price, type,
+      imageURL: imageURL,
+      id: id,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      enabled: enabled);
   await product.insert();
   Product.allProducts.add(product);
   return true;

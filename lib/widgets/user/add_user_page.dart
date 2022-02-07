@@ -1,5 +1,4 @@
 import 'package:estike/config.dart';
-import 'package:estike/http_handler.dart';
 import 'package:estike/models/user.dart';
 import 'package:estike/widgets/future_success_dialog.dart';
 import 'package:flutter/material.dart';
@@ -91,7 +90,6 @@ class _AddUserPageState extends State<AddUserPage> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
               ],
-              
               decoration: InputDecoration(
                 hintText: '0',
                 labelText: 'Kezdőtőke',
@@ -143,17 +141,8 @@ class _AddUserPageState extends State<AddUserPage> {
 
   Future<bool> _postUser(String name, int id, int balance) async {
     try {
-      if (isOnline) {
-        Map<String, dynamic> body = {
-          'name': name,
-          'id': id,
-          'balance': balance,
-        };
-        await httpPost(
-            context: context, uri: generateUri(GetUriKeys.users), body: body);
-      } else {
-        await addUser(name, id, balance: balance);
-      }
+      await addUser(name, id, balance: balance);
+
       Future.delayed(Duration(milliseconds: 300))
           .then((value) => _onPostUser());
       return true;

@@ -1,18 +1,22 @@
-import 'dart:convert';
-
 import 'package:estike/models/purchase.dart';
 import 'package:estike/widgets/future_success_dialog.dart';
 import 'package:estike/widgets/product/product_ledger_item.dart';
+import 'package:estike/widgets/product/product_page_other_button.dart';
 import 'package:estike/widgets/user/modify_balance_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 
-import '../../config.dart';
-import '../../http_handler.dart';
 import '../../models/product.dart';
 import '../../models/user.dart';
 import 'product_card.dart';
+
+class PopIntent extends Intent {
+  const PopIntent();
+}
+
+class BuyProductIntent extends Intent {
+  const BuyProductIntent();
+}
 
 class ProductPage extends StatefulWidget {
   final User user;
@@ -23,172 +27,128 @@ class ProductPage extends StatefulWidget {
 }
 
 class _ProductPageState extends State<ProductPage> {
-  List<FocusNode> nodes = [];
-  int nodeNum = 0;
   Map<Product, double> productsToBuy = {};
-  bool small = false;
-  Future<List<Product>>? _products;
+  bool smallScreen = false;
 
   Map<ProductType, bool> whichToShow = {
-    ProductType.beer:false,
-    ProductType.wine:false,
-    ProductType.cocktail:false,
-    ProductType.long:false,
-    ProductType.shot:false,
-    ProductType.other:false,
-    ProductType.meal:false,
-    ProductType.soda:false,    
+    ProductType.beer: false,
+    ProductType.wine: false,
+    ProductType.cocktail: false,
+    ProductType.long: false,
+    ProductType.shot: false,
+    ProductType.other: false,
+    ProductType.meal: false,
+    ProductType.soda: false,
   };
 
   @override
-  void initState() {
-    if (isOnline) {
-      _products = null;
-      _products = _getProducts();
-    }
-    super.initState();
-  }
-
-  void resetAll() {
-    if (isOnline) {
-      _products = null;
-      _products = _getProducts();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    small = MediaQuery.of(context).size.width <= 1200;
-    nodes = [];
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Ital kiválasztása'),
-        actions: widget.user.id==-1?[]:[
-          TextButton(
-            child: Row(
-              children: [
-                Text("Feltöltés", style: TextStyle(color: Colors.black, fontSize: 20),),
-                SizedBox(width: 5,),
-                Icon(Icons.payments, color: Colors.black,),
-              ],
-            ),
-            onPressed: () => showDialog(context: context, builder: (context) => ModifyBalanceDialog(selectedUser: widget.user)),
+    smallScreen = MediaQuery.of(context).size.width <= 1200;
+    return Shortcuts(
+      shortcuts: <LogicalKeySet, Intent>{
+        LogicalKeySet(LogicalKeyboardKey.escape): PopIntent(),
+        LogicalKeySet(LogicalKeyboardKey.enter): BuyProductIntent(),
+      },
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          PopIntent: CallbackAction<PopIntent>(
+            onInvoke: (PopIntent intent) => Navigator.pop(context),
           ),
-        ],
-      ),
-      body: small
-          ? Column(
-              children: [
-                Expanded(
-                  child: isOnline
-                      ? FutureBuilder(
-                          future: _products,
-                          builder:
-                              (context, AsyncSnapshot<List<Product>> snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.done) {
-                              if (snapshot.hasData && snapshot.data != null) {
-                                return _generateLeftUpperPart(snapshot.data!);
-                              } else {
-                                return Text(snapshot.error.toString());
-                              }
-                            }
-                            return CircularProgressIndicator();
-                          },
-                        )
-                      : _generateLeftUpperPart(Product.allProducts),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(
-                        color: Colors.grey[300]!,
+          BuyProductIntent: CallbackAction<BuyProductIntent>(
+            onInvoke: (BuyProductIntent intent) => buyProducts(),
+          )
+        },
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text('Ital kiválasztása'),
+              actions: widget.user.id == User.cashUserId
+                  ? []
+                  : [
+                      TextButton(
+                        child: Row(
+                          children: [
+                            Text(
+                              "Feltöltés",
+                              style:
+                                  TextStyle(color: Colors.black, fontSize: 20),
+                            ),
+                            SizedBox(
+                              width: 5,
+                            ),
+                            Icon(
+                              Icons.payments,
+                              color: Colors.black,
+                            ),
+                          ],
+                        ),
+                        onPressed: () => showDialog(
+                            context: context,
+                            builder: (context) =>
+                                ModifyBalanceDialog(selectedUser: widget.user)),
                       ),
-                    ),
-                  ),
-                  height: MediaQuery.of(context).size.height / 3.3,
-                  child: _generateRightLower(),
-                ),
-              ],
-            )
-          : Table(
-              columnWidths: {
-                0: FractionColumnWidth(0.6),
-                1: FractionColumnWidth(0.4),
-              },
-              children: [
-                TableRow(
-                  children: [
-                    Container(
-                      height: MediaQuery.of(context).size.height,
-                      child: isOnline
-                          ? FutureBuilder(
-                              future: _products,
-                              builder: (context,
-                                  AsyncSnapshot<List<Product>> snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.done) {
-                                  if (snapshot.hasData &&
-                                      snapshot.data != null) {
-                                    return _generateLeftUpperPart(
-                                        snapshot.data!);
-                                  } else {
-                                    return Text(snapshot.error.toString());
-                                  }
-                                }
-                                return CircularProgressIndicator();
-                              },
-                            )
-                          : _generateLeftUpperPart(Product.allProducts.where((element) => element.enabled).toList()),
-                    ),
-                    Container(
-                      height: MediaQuery.of(context).size.height,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          left: BorderSide(
-                            color: Colors.grey[300]!,
+                    ],
+            ),
+            body: smallScreen
+                ? Column(
+                    children: [
+                      Expanded(
+                        child: _generateLeftUpperPart(),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            top: BorderSide(
+                              color: Colors.grey[300]!,
+                            ),
                           ),
                         ),
+                        height: MediaQuery.of(context).size.height / 3.3,
+                        child: _generateRightLower(),
                       ),
-                      child: _generateRightLower(),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                    ],
+                  )
+                : Table(
+                    columnWidths: {
+                      0: FractionColumnWidth(0.6),
+                      1: FractionColumnWidth(0.4),
+                    },
+                    children: [
+                      TableRow(
+                        children: [
+                          Container(
+                            height: MediaQuery.of(context).size.height,
+                            child: _generateLeftUpperPart(),
+                          ),
+                          Container(
+                            height: MediaQuery.of(context).size.height,
+                            decoration: BoxDecoration(
+                              border: Border(
+                                left: BorderSide(
+                                  color: Colors.grey[300]!,
+                                ),
+                              ),
+                            ),
+                            child: _generateRightLower(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
     );
   }
 
-  Future<List<Product>> _getProducts() async {
-    try {
-      http.Response response = await httpGet(
-          context: context, uri: generateUri(GetUriKeys.products));
-      dynamic decoded = jsonDecode(response.body);
-      List<Product> products = [];
-      for (Map<String, dynamic> decodedProduct in decoded) {
-        Product product = Product(
-          decodedProduct['name'],
-          decodedProduct['price'],
-          productTypeFromString(decodedProduct['type']),
-          id: decodedProduct['id'],
-          enabled: decodedProduct['deleted_at']==null
-        );
-        // product.peopleBuying = decodedProduct['people_buying'];
-        products.add(product);
-      }
-      return products;
-    } catch (_) {
-      throw _;
-    }
-  }
-
-  void halfProductOnList(Product product){
+  void halfProductOnList(Product product) {
     setState(() {
       if (productsToBuy.containsKey(product)) {
-        if(productsToBuy[product]!<=0.5){
+        if (productsToBuy[product]! <= 0.5) {
           productsToBuy.remove(product);
-        }else{
-          productsToBuy[product] = productsToBuy[product]! - 1/2;
+        } else {
+          productsToBuy[product] = productsToBuy[product]! - 1 / 2;
         }
       } else {
         productsToBuy[product] = 0.5;
@@ -223,6 +183,50 @@ class _ProductPageState extends State<ProductPage> {
     return sum;
   }
 
+  void buyProducts() async {
+    if (productsToBuy.keys.length != 0) {
+      if (widget.user.id != User.cashUserId) {
+        DateTime date = DateTime.now();
+        if (date.hour > 4) {
+          if (widget.user.balance < sum(productsToBuy)) {
+            return await showDialog(
+              context: context,
+              builder: (context) {
+                return Dialog(
+                  child: Padding(
+                    padding: const EdgeInsets.all(15),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Nincs elég pénz a számlán!',
+                          style: Theme.of(context).textTheme.headline6,
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text('OK'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+        }
+      }
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) {
+          return FutureSuccessDialog(
+              future:
+                  _postPurchases(usesCash: widget.user.id == User.cashUserId));
+        },
+      );
+    }
+  }
+
   Widget _generateRightLower() {
     return ListView(
       controller: ScrollController(),
@@ -233,18 +237,8 @@ class _ProductPageState extends State<ProductPage> {
           visible: productsToBuy.keys.length > 0,
           child: Center(
             child: ElevatedButton(
-              onPressed: () async {
-                if (productsToBuy.keys.length != 0) {
-                  // if (sum(productsToBuy) <= widget.user.balance) {
-                    showDialog(
-                      barrierDismissible: false,
-                      context: context,
-                      builder: (context) {
-                        return FutureSuccessDialog(future: _postPurchases(usesCash: widget.user.id==-1));
-                      },
-                    );
-                  // }
-                }
+              onPressed: () {
+                buyProducts();
               },
               child: Icon(
                 Icons.send,
@@ -316,39 +310,24 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
-  Future<bool> _postPurchases({bool usesCash=false}) async {
+  Future<bool> _postPurchases({bool usesCash = false}) async {
     try {
-      if (isOnline) {
-        Map<String, dynamic> body = {
-          'customerId': widget.user.id,
-          'products': productsToBuy.keys.map((product) {
-            return {
-              'productId': product.id,
-              'quantity': productsToBuy[product],
-            };
-          }).toList(),
-          'happenedAt': DateTime.now().toIso8601String(),
-        };
-        print(body);
-        await httpPost(context: context, uri: '/purchase', body: body);
-      } else {
-        if(usesCash){
-          for (Product product in productsToBuy.keys) {
-            await addPurchase(
-                  widget.user.id, product.id, productsToBuy[product]!);
-          }
-        }else{
-          for (Product product in productsToBuy.keys) {
-            widget.user.addBoughProduct(product, number: productsToBuy[product]!.ceil());
-            product.addPersonBuying(widget.user, productsToBuy[product]!.ceil());
-            await addPurchase(
-                widget.user.id, product.id, productsToBuy[product]!);
-          }
-          widget.user.balance -= sum(productsToBuy).ceil();
-          await widget.user.update();
+      if (usesCash) {
+        for (Product product in productsToBuy.keys) {
+          await addPurchase(
+              widget.user.id, product.id, productsToBuy[product]!);
         }
-        
+      } else {
+        for (Product product in productsToBuy.keys) {
+          widget.user
+              .addBoughProduct(product, number: productsToBuy[product]!.ceil());
+          product.addPersonBuying(widget.user, productsToBuy[product]!.ceil());
+          await addPurchase(
+              widget.user.id, product.id, productsToBuy[product]!);
+        }
+        await widget.user.modifyBalance(-sum(productsToBuy).ceil());
       }
+
       Future.delayed(Duration(milliseconds: 300))
           .then((value) => _onPostPurchases());
       return true;
@@ -362,16 +341,18 @@ class _ProductPageState extends State<ProductPage> {
     Navigator.pop(context);
   }
 
-  Widget _generateLeftUpperPart(List<Product> products) {
-    double width = MediaQuery.of(context).size.width;
-    if (width > 1200) {
-      width = 6 * width / 10;
+  Widget _generateLeftUpperPart() {
+    List<Product> products =
+        Product.allProducts.where((element) => element.enabled).toList();
+    double usablePartWidth = MediaQuery.of(context).size.width;
+    if (!smallScreen) {
+      usablePartWidth = 6 * usablePartWidth / 10;
     }
-    small = false;
-    int count = (width / 200).floor();
-    if (width < 400) {
-      small = true;
-      count = (width / 150).floor();
+    bool smallText = false;
+    int columnCount = (usablePartWidth / 200).floor();
+    if (usablePartWidth < 400) {
+      smallText = true;
+      columnCount = (usablePartWidth / 150).floor();
     }
     return ListView(
       controller: ScrollController(),
@@ -387,70 +368,78 @@ class _ProductPageState extends State<ProductPage> {
                 'Ajánlott',
                 style: Theme.of(context).textTheme.headline3,
               ),
-              _generateGrid(null, products, count),
+              _generateGrid(null, products, columnCount, smallText),
             ],
           ),
         ),
-        _productTypeWidget(products, count, ProductType.beer),
-        _productTypeWidget(products, count, ProductType.long),
-        _productTypeWidget(products, count, ProductType.shot),
-        _productTypeWidget(products, count, ProductType.wine),
-        _productTypeWidget(products, count, ProductType.cocktail),
-        _productTypeWidget(products, count, ProductType.soda),
-        _productTypeWidget(products, count, ProductType.meal),        
-        _otherButton(count),
+        _productTypeWidget(products, columnCount, ProductType.beer, smallText),
+        _productTypeWidget(products, columnCount, ProductType.long, smallText),
+        _productTypeWidget(products, columnCount, ProductType.shot, smallText),
+        _productTypeWidget(products, columnCount, ProductType.wine, smallText),
+        _productTypeWidget(
+            products, columnCount, ProductType.cocktail, smallText),
+        _productTypeWidget(products, columnCount, ProductType.soda, smallText),
+        _productTypeWidget(products, columnCount, ProductType.meal, smallText),
+        OtherButton(
+            user: widget.user,
+            productColumnCount: columnCount,
+            smallScreen: smallText),
         SizedBox(
           height: 200,
         ),
       ],
     );
   }
-  Widget _productTypeWidget(List<Product> products, int count, ProductType type) {
-    String name='';
-    switch(type){
+
+  Widget _productTypeWidget(
+      List<Product> products, int count, ProductType type, bool smallText) {
+    String name = '';
+    switch (type) {
       case ProductType.beer:
-        name='Sörök';
+        name = 'Sörök';
         break;
       case ProductType.long:
-        name='Hosszú italok';
+        name = 'Hosszú italok';
         break;
       case ProductType.shot:
-        name='Rövid italok';
+        name = 'Rövid italok';
         break;
       case ProductType.wine:
-        name='Borok';
+        name = 'Borok';
         break;
       case ProductType.cocktail:
-        name='Koktélok';
+        name = 'Koktélok';
         break;
       case ProductType.soda:
-        name='Üdítők';
+        name = 'Üdítők';
         break;
       case ProductType.meal:
-        name='Ételek';
+        name = 'Ételek';
         break;
       case ProductType.other:
-        name='Egyebek';
+        name = 'Egyebek';
         break;
     }
     return Column(
       children: [
         TextButton(
-          onPressed: (){
+          onPressed: () {
             setState(() {
-              whichToShow[type]=!whichToShow[type]!;
+              whichToShow[type] = !whichToShow[type]!;
             });
           },
-          child: 
-          Row(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                name,
-                style: Theme.of(context).textTheme.headline3,
+              Flexible(
+                child: Text(
+                  name,
+                  style: Theme.of(context).textTheme.headline3,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               Icon(
-                whichToShow[type]!?Icons.expand_less:Icons.expand_more,
+                whichToShow[type]! ? Icons.expand_less : Icons.expand_more,
                 size: 50,
               )
             ],
@@ -458,119 +447,17 @@ class _ProductPageState extends State<ProductPage> {
         ),
         Visibility(
           visible: whichToShow[type]!,
-          child: _generateGrid(type, products, count)
+          child: _generateGrid(type, products, count, smallText),
         ),
       ],
     );
   }
 
-  Widget _otherButtonDialog(TextEditingController controller){
-    return Dialog(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Vonj le valamennyit!', style: Theme.of(context).textTheme.headline5,),
-            TextFormField(
-              controller: controller,
-              decoration: InputDecoration(
-                labelText: 'Összeg',
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-              ],
-              validator: (String? text){
-                if(text==null || text.isEmpty){
-                  return 'Kérlek írd be az összeget!';
-                }
-                if(double.tryParse(text)==null){
-                  return 'Kérlek írj számot!';
-                }
-                return null;
-              },
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-            ),
-            SizedBox(height: 10,),
-            ElevatedButton(
-              child: Icon(Icons.send),
-              onPressed: (){
-                if(controller.text!='' && int.tryParse(controller.text) != null){
-                  double amount = double.parse(controller.text);
-                  widget.user.balance-=amount.ceil();
-                  addPurchase(widget.user.id, -1, -amount);
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                }
-              },
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _otherButton(int count){
-    return Visibility(
-          visible: widget.user.id!=-1,
-          child: AspectRatio(
-            aspectRatio: count.toDouble()*2, 
-            child: Card(
-              color: Theme.of(context).colorScheme.primary,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(30),
-                onTap: () {
-                  TextEditingController controller = TextEditingController();
-                  showDialog(
-                    context: context, 
-                    builder: (context){
-                      return _otherButtonDialog(controller);
-                    }
-                  );
-                },
-                child: Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Stack(
-                    children: [
-                      Material(
-                        color: Colors.transparent,
-                      ),
-                      Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Egyéni",
-                              style: small
-                                  ? Theme.of(context).textTheme.headline5
-                                  : Theme.of(context).textTheme.headline4!.copyWith(color: Colors.black),
-                              textAlign: TextAlign.center,
-                            ),
-                            Flexible(
-                              child: Icon(
-                                Icons.construction,
-                                color: Colors.black,
-                                size: small
-                                    ? 20
-                                    : 30,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-  }
-
-  Widget _generateGrid(ProductType? type, List<Product> allProducts, int count) {
+  Widget _generateGrid(ProductType? type, List<Product> allProducts,
+      int columnCount, bool smallText) {
     List<Product> products = [];
     if (type == null) {
+      //Ajanlott
       var mapEntries = widget.user.productsBought.entries.toList()
         ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -585,20 +472,17 @@ class _ProductPageState extends State<ProductPage> {
     }
 
     if (products.length == 0) return Container();
-    
+
     return GridView.count(
       physics: NeverScrollableScrollPhysics(),
       shrinkWrap: true,
-      crossAxisCount: count,
+      crossAxisCount: columnCount,
       children: products.map<Widget>(
         (e) {
-          FocusNode node = FocusNode();
-          nodes.add(node);
           return ProductCard(
             addProductToList: addProductToList,
-            node: node,
             product: e,
-            small: small,
+            small: smallText,
           );
         },
       ).toList(),

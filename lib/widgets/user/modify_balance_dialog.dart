@@ -1,3 +1,4 @@
+import 'package:estike/models/product.dart';
 import 'package:estike/models/purchase.dart';
 import 'package:estike/models/user.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,8 @@ import '../future_success_dialog.dart';
 
 class ModifyBalanceDialog extends StatefulWidget {
   final User selectedUser;
-  const ModifyBalanceDialog({ Key? key , required this.selectedUser}) : super(key: key);
+  const ModifyBalanceDialog({Key? key, required this.selectedUser})
+      : super(key: key);
 
   @override
   _ModifyBalanceDialogState createState() => _ModifyBalanceDialogState();
@@ -16,6 +18,11 @@ class ModifyBalanceDialog extends StatefulWidget {
 class _ModifyBalanceDialogState extends State<ModifyBalanceDialog> {
   TextEditingController plusController = TextEditingController();
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Dialog(
       child: Padding(
@@ -23,11 +30,13 @@ class _ModifyBalanceDialogState extends State<ModifyBalanceDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(widget.selectedUser.name, style: Theme.of(context).textTheme.headline6),
+            Text(widget.selectedUser.name,
+                style: Theme.of(context).textTheme.headline6),
             SizedBox(
               height: 15,
             ),
-            TextField(
+            TextFormField(
+              autofocus: true,
               controller: plusController,
               decoration: InputDecoration(
                 labelText: 'Plusz',
@@ -36,26 +45,16 @@ class _ModifyBalanceDialogState extends State<ModifyBalanceDialog> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp('[0-9]')),
               ],
+              onFieldSubmitted: (String? text) {
+                _submit();
+              },
             ),
             SizedBox(
               height: 10,
             ),
             ElevatedButton(
               onPressed: () async {
-                int? balance = int.tryParse(plusController.text);
-                if (balance != null) {
-                  showDialog(
-                    barrierDismissible: false,
-                    context: context,
-                    builder: (context) {
-                      return FutureSuccessDialog(
-                        future: _updateBalance(balance),
-                      );
-                    },
-                  );
-                } else {
-                  //TODO
-                }
+                await _submit();
               },
               child: Icon(Icons.send),
             ),
@@ -65,13 +64,29 @@ class _ModifyBalanceDialogState extends State<ModifyBalanceDialog> {
     );
   }
 
+  Future _submit() async {
+    int? balance = int.tryParse(plusController.text);
+    if (balance != null) {
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) {
+          return FutureSuccessDialog(
+            future: _updateBalance(balance),
+          );
+        },
+      );
+    } else {
+      //TODO
+    }
+  }
+
   Future<bool> _updateBalance(int balance) async {
     try {
-      widget.selectedUser.balance += balance;
-      await addPurchase(widget.selectedUser.id, -1,
-          balance.toDouble()); // productId -1 means, that this was a balance modification
-      await widget.selectedUser.update();
-      
+      await addPurchase(widget.selectedUser.id, Product.modifiedBalanceId,
+          balance.toDouble());
+      await widget.selectedUser.modifyBalance(balance);
+
       Future.delayed(Duration(milliseconds: 300))
           .then((value) => _onUpdateBalance());
       return true;

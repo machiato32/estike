@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+
 import '../../models/product.dart';
 
 class ProductCard extends StatelessWidget {
   final Function(Product product) addProductToList;
   final Product product;
   final bool small;
-  final FocusNode node;
   const ProductCard(
       {required this.product,
-      required this.node,
       this.small = false,
       required this.addProductToList});
 
@@ -18,7 +17,6 @@ class ProductCard extends StatelessWidget {
       aspectRatio: 1,
       child: Card(
         child: InkWell(
-          focusNode: node,
           borderRadius: BorderRadius.circular(30),
           onTap: () {
             addProductToList(product);

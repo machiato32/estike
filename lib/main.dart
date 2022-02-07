@@ -46,7 +46,7 @@ void main() async {
     }else{
       lastUpdatedAt=prefs.getString('last_updated')!;
     }
-
+    print(lastUpdatedAt);
   }
 
   runApp(MyApp());

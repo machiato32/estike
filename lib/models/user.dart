@@ -1,4 +1,3 @@
-import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../database_helper.dart';
@@ -6,12 +5,15 @@ import 'product.dart';
 
 class User {
   static List<User> allUsers = [];
+  static const cashUserId = -1;
   String name;
   int id;
   int balance;
   late DateTime createdAt;
   late DateTime updatedAt;
-  Map<int, int> productsBought = {}; // productId, timesBought
+
+  /// productId, timesBought
+  Map<int, int> productsBought = {};
 
   User(this.id, this.name, this.balance,
       {DateTime? createdAt, DateTime? updatedAt}) {
@@ -70,6 +72,7 @@ class User {
   }
 
   Future<bool> update() async {
+    this.updatedAt = DateTime.now();
     try {
       Database db = await DatabaseHelper.instance.database;
       await db
@@ -84,6 +87,16 @@ class User {
     Database db = await DatabaseHelper.instance.database;
     await db.delete('users', where: 'id = ?', whereArgs: [this.id]);
     return true;
+  }
+
+  Future<bool> modifyBalance(int modification) async {
+    try {
+      this.balance += modification;
+      await this.update();
+      return true;
+    } catch (_) {
+      throw _;
+    }
   }
 
   void addBoughProduct(Product product, {int number = 1}) {
@@ -105,8 +118,10 @@ Future<List<User>> queryUsers() async {
   return users.map((e) => User.fromMap(e)).toList();
 }
 
-Future<bool> addUser(String name, int id, {int balance = 0, DateTime? createdAt, DateTime? updatedAt}) async {
-  User user = User(id, name, balance, createdAt: createdAt, updatedAt: updatedAt);
+Future<bool> addUser(String name, int id,
+    {int balance = 0, DateTime? createdAt, DateTime? updatedAt}) async {
+  User user =
+      User(id, name, balance, createdAt: createdAt, updatedAt: updatedAt);
   await user.insert();
   User.allUsers.add(user);
   return true;
