@@ -17,6 +17,20 @@ class _AddUserPageState extends State<AddUserPage> {
   TextEditingController balanceController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   var key = GlobalKey<FormState>();
+  @override
+  void initState() {
+    super.initState();
+
+    int firstFreeId = 100;
+    for (User user in User.allUsers
+      ..sort((user1, user2) => user1.id.compareTo(user2.id))) {
+      if (user.id < 10000 && user.id == firstFreeId) {
+        firstFreeId = user.id + 1;
+      }
+    }
+    print(firstFreeId);
+    idController.text = firstFreeId.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +73,6 @@ class _AddUserPageState extends State<AddUserPage> {
                   return 'Csak szám lehet!';
                 }
                 if (User.allUsers.where((user) => user.id == id).isNotEmpty) {
-                  //TODO: online? -> le kell kerni az osszes userId-t
                   return 'Már foglalt!';
                 }
                 return null;
@@ -109,7 +122,7 @@ class _AddUserPageState extends State<AddUserPage> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  if (passwordController.text == masterPassword) {
+                  if (passwordController.text == addUserPassword) {
                     if (key.currentState!.validate()) {
                       String name = nameController.text;
                       int id = int.parse(idController.text);
@@ -127,7 +140,39 @@ class _AddUserPageState extends State<AddUserPage> {
                       );
                     }
                   } else {
-                    //TODO: this
+                    showDialog(
+                      context: context,
+                      builder: (context) => Dialog(
+                        child: Padding(
+                          padding: const EdgeInsets.all(30),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Hibás jelszó 😢',
+                                style: Theme.of(context).textTheme.headline4,
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                'Kérdezd meg Dominikot 😎',
+                                textAlign: TextAlign.center,
+                              ),
+                              Text(
+                                'Ha te vagy Dominik, akkor ajánlom, hogy ilyen állapotban ne adj hozzá embereket a számlához',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyText2!
+                                    .copyWith(fontSize: 8),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
                   }
                 },
                 child: Icon(Icons.send),

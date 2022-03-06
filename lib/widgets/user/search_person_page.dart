@@ -92,19 +92,23 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
             .toList()
             .fold(0, (previous, current) => previous + current)));
     if (_users.length == 0) return Container();
-    double width = widget.width;
+    double widgetWidth = widget.width;
     bool smallText = false;
-    int columnCount = (width / 200).floor();
-    if (width < 400) {
+    int columnCount = (widgetWidth / 200).floor();
+    if (widgetWidth < 400) {
       smallText = true;
-      columnCount = (width / 150).floor();
+      columnCount = (widgetWidth / 150).floor();
     }
     int usersLength = max(_users.length, (columnCount / 2).ceil());
 
     columnCount = min(columnCount, usersLength);
     return Column(
       children: [
-        CashButton(smallText: smallText, isVisible: searchWord=="", columnCount: columnCount, resetAll: resetAll),
+        CashButton(
+            smallText: smallText,
+            isVisible: searchWord == "",
+            columnCount: columnCount,
+            resetAll: resetAll),
         GridView.builder(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),

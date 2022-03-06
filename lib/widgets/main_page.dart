@@ -6,11 +6,13 @@ import 'package:estike/widgets/split_view.dart';
 import 'package:estike/widgets/user/add_user_page.dart';
 import 'package:estike/widgets/user/modify_balance.dart';
 import 'package:estike/widgets/user/search_person_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config.dart';
+import '../database_helper.dart';
 import '../models/product.dart';
 import '../models/purchase.dart';
 import '../models/user.dart';
@@ -23,6 +25,9 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   late Widget drawer;
+  bool tapped = false;
+  bool doubleTapped = false;
+  TextEditingController passwordController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -33,12 +38,84 @@ class _MainPageState extends State<MainPage> {
     drawer = ListView(
       controller: ScrollController(),
       children: [
-        DrawerHeader(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary,
+        GestureDetector(
+          onTap: () {
+            tapped = !tapped;
+          },
+          onDoubleTap: () {
+            if (tapped) {
+              doubleTapped = !doubleTapped;
+            }
+          },
+          onLongPress: () {
+            if (tapped && doubleTapped) {
+              tapped = false;
+              doubleTapped = false;
+              showDialog(
+                context: context,
+                builder: (context) => Dialog(
+                  child: Padding(
+                    padding: EdgeInsets.all(15),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          adminMode
+                              ? 'Kilépés admin módból'
+                              : 'Belépés admin módba',
+                          style: Theme.of(context).textTheme.headline5,
+                          textAlign: TextAlign.center,
+                        ),
+                        TextField(
+                          controller: passwordController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            label: Text('Jelszó'),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            if (passwordController.text == adminPassword) {
+                              Navigator.pop(context);
+                              passwordController.text = '';
+                              setState(() {
+                                adminMode = !adminMode;
+                              });
+                            }
+                          },
+                          child: Text('OK'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+          },
+          child: DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            child: Center(
+              child: Image.asset('assets/estike_logo.png'),
+            ),
           ),
-          child: Center(
-            child: Image.asset('assets/estike_logo.png'),
+        ),
+        Visibility(
+          visible: adminMode,
+          child: ListTile(
+            leading: Icon(Icons.admin_panel_settings),
+            title: Text('Admin mód'),
+          ),
+        ),
+        Visibility(
+          visible: debugMode,
+          child: ListTile(
+            leading: Icon(Icons.bug_report),
+            title: Text('Debug mód'),
           ),
         ),
         ListTile(
@@ -115,7 +192,10 @@ class _MainPageState extends State<MainPage> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('Előbb töltsd fel az adatokat!'),
+                            Text(
+                              'Előbb töltsd fel az adatokat!',
+                              style: Theme.of(context).textTheme.headline5,
+                            ),
                             SizedBox(
                               height: 20,
                             ),
@@ -141,13 +221,55 @@ class _MainPageState extends State<MainPage> {
             "Feltöltés",
           ),
           onTap: () async {
-            showDialog(
+            if (debugMode == false) {
+              showDialog(
                 barrierDismissible: false,
                 context: context,
                 builder: (context) => FutureSuccessDialog(
-                      future: _uploadData(),
-                    ));
+                  future: _uploadData(),
+                ),
+              );
+            } else {
+              showDialog(
+                context: context,
+                builder: (context) => Dialog(
+                  child: Text('Debug modban nem lehet feltolteni'),
+                ),
+              );
+            }
           },
+        ),
+        Visibility(
+          visible: debugMode || adminMode,
+          child: ListTile(
+            leading: Icon(Icons.restart_alt),
+            title: Text('Minden adat törlése'),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => Dialog(
+                  child: Padding(
+                    padding: EdgeInsets.all(15),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Biztos ki akarsz törölni minden adatot?'),
+                        TextButton(
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (contex) => FutureSuccessDialog(
+                                    future: _deleteEverything()));
+                          },
+                          child: Text('Igen'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -171,6 +293,28 @@ class _MainPageState extends State<MainPage> {
         ),
       ),
     );
+  }
+
+  Future<bool> _deleteEverything() async {
+    lastUpdatedAt = DateTime.parse('2021-01-01 00:00:00').toIso8601String();
+
+    var prefs = await SharedPreferences.getInstance();
+    prefs.setString('last_updated', lastUpdatedAt);
+    await DatabaseHelper.instance.deleteDb();
+    User.allUsers = [];
+    Product.allProducts = [];
+    Purchase.allPurchases = [];
+    Product.maxId = 0;
+    Future.delayed(Duration(milliseconds: 300))
+        .then((value) => _onDeleteEverything());
+    await DatabaseHelper.instance.initDatabase();
+    return true;
+  }
+
+  void _onDeleteEverything() {
+    Navigator.pop(context);
+    Navigator.pop(context);
+    setState(() {});
   }
 
   Future<bool> _downloadData() async {

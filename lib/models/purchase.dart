@@ -1,7 +1,6 @@
 import 'package:estike/database_helper.dart';
 import 'package:estike/models/product.dart';
 import 'package:estike/models/user.dart';
-import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 
 class Purchase {
@@ -85,7 +84,7 @@ class Purchase {
   }
 
   Future<int> update() async {
-    this.updatedAt=DateTime.now();
+    this.updatedAt = DateTime.now();
     Database db = await DatabaseHelper.instance.database;
     this.updatedAt = DateTime.now();
     return await db.update(
@@ -114,14 +113,17 @@ Future<void> initPurchases() async {
   // print(Purchase.allPurchases);
   // print(Purchase.maxId);
   for (Purchase purchase in Purchase.allPurchases) {
-    try {
-      addPeopleBuying(purchase);
-    } on StateError {
-      print('No user or product found');
-      //TODO
+    if (purchase.userId != User.cashUserId &&
+        purchase.productId != Product.modifiedBalanceId) {
+      try {
+        addPeopleBuying(purchase);
+      } on StateError {
+        print('No user or product found');
+      }
     }
   }
 }
+
 void addPeopleBuying(Purchase purchase) {
   User user =
       User.allUsers.firstWhere((element) => element.id == purchase.userId);
@@ -138,6 +140,7 @@ void addPeopleBuying(Purchase purchase) {
     product.peopleBuying[user.id] = 1;
   }
 }
+
 Future<List<Purchase>> queryPurchases() async {
   try {
     Database db = await DatabaseHelper.instance.database;
@@ -153,7 +156,7 @@ Future<bool> addPurchase(int userId, int productId, double amount) async {
     Purchase purchase =
         Purchase(userId: userId, productId: productId, amount: amount);
     Purchase.allPurchases.add(purchase);
-    if(productId!=-1 && userId!=-1){
+    if (productId != -1 && userId != -1) {
       addPeopleBuying(purchase);
     }
     await purchase.insert();
