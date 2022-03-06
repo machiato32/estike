@@ -233,7 +233,15 @@ class _MainPageState extends State<MainPage> {
               showDialog(
                 context: context,
                 builder: (context) => Dialog(
-                  child: Text('Debug modban nem lehet feltolteni'),
+                  child: Padding(
+                    padding: const EdgeInsets.all(15),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Debug modban nem lehet feltolteni'),
+                      ],
+                    ),
+                  ),
                 ),
               );
             }
@@ -258,7 +266,7 @@ class _MainPageState extends State<MainPage> {
                           onPressed: () {
                             showDialog(
                                 context: context,
-                                builder: (contex) => FutureSuccessDialog(
+                                builder: (context) => FutureSuccessDialog(
                                     future: _deleteEverything()));
                           },
                           child: Text('Igen'),
@@ -297,7 +305,6 @@ class _MainPageState extends State<MainPage> {
 
   Future<bool> _deleteEverything() async {
     lastUpdatedAt = DateTime.parse('2021-01-01 00:00:00').toIso8601String();
-
     var prefs = await SharedPreferences.getInstance();
     prefs.setString('last_updated', lastUpdatedAt);
     await DatabaseHelper.instance.deleteDb();

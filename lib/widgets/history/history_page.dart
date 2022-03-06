@@ -65,7 +65,7 @@ class _HistoryPageState extends State<HistoryPage> {
               alreadyDrawnLine = true;
               return Column(
                 children: [
-                  HistoryEntry(purchases: purchases),
+                  HistoryEntry(purchases: purchases, refreshAll: refreshAll),
                   Stack(
                     children: [
                       Divider(
@@ -95,12 +95,19 @@ class _HistoryPageState extends State<HistoryPage> {
                 ],
               );
             }
-            return HistoryEntry(purchases: purchases);
+            return HistoryEntry(
+              purchases: purchases,
+              refreshAll: refreshAll,
+            );
           })
           .toList()
           .reversed
           .toList();
     }
     return [Container()];
+  }
+
+  void refreshAll() {
+    setState(() {});
   }
 }
