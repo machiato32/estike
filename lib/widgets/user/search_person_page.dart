@@ -1,9 +1,12 @@
 import 'dart:math';
 
+import 'package:estike/models/product.dart';
+import 'package:estike/models/purchase.dart';
 import 'package:estike/widgets/product/product_page.dart';
 import 'package:estike/widgets/user/cashButton.dart';
 import 'package:flutter/material.dart';
 
+import '../../config.dart';
 import '../../models/user.dart';
 import 'user_card.dart';
 
@@ -75,8 +78,55 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
     });
   }
 
+  void sortUsers() {
+    _users.sort((user1, user2) => compareUsers(user1, user2));
+    if (cleaningMode) {
+      List<User> bartenders =
+          _users.where((element) => element.id == User.bartenderId).toList();
+      if (bartenders.isNotEmpty) {
+        User bartender = bartenders.first;
+        _users.remove(bartender);
+        _users.insert(0, bartender);
+      }
+    }
+  }
+
+  int compareUsers(User user1, User user2) {
+    double value1 = userValue(user1);
+    double value2 = userValue(user2);
+    return value2.compareTo(value1);
+  }
+
+  double userValue(User user) {
+    double value = (100000 - user.id) / 1000000;
+    List<Purchase> purchases = Purchase.allPurchases
+        .where((element) =>
+            element.userId == user.id &&
+            element.productId != Product.modifiedBalanceId)
+        .toList();
+    for (Purchase purchase in purchases) {
+      value += purchase.amount;
+    }
+    if (purchases.isNotEmpty) {
+      DateTime now = DateTime.now();
+      purchases = purchases
+          .where((element) =>
+              now.difference(element.createdAt) < Duration(days: 1))
+          .toList();
+      for (Purchase purchase in purchases) {
+        value += purchase.amount * 3;
+      }
+    }
+    return value;
+  }
+
   Widget _generateGrid() {
-    _users = User.allUsers;
+    _users = User.allUsers.toList();
+    if (!cleaningMode) {
+      _users = _users
+          .where((element) => element.id != User.bartenderId)
+          .toList(); //Show csapos user only when cleaning
+    }
     if (searchWord != "") {
       _users = _users
           .where((element) =>
@@ -84,13 +134,7 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
               element.name.toLowerCase().contains(searchWord.toLowerCase()))
           .toList();
     }
-    //sorts based on number of items bought
-    _users.sort((user1, user2) => -user1.productsBought.values
-        .toList()
-        .fold(0, (previous, current) => (previous as int) + current)
-        .compareTo(user2.productsBought.values
-            .toList()
-            .fold(0, (previous, current) => previous + current)));
+    sortUsers();
     if (_users.length == 0) return Container();
     double widgetWidth = widget.width;
     bool smallText = false;

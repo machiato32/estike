@@ -1,6 +1,6 @@
-import 'package:estike/config.dart';
 import 'package:estike/models/purchase.dart';
 import 'package:estike/widgets/future_success_dialog.dart';
+import 'package:estike/widgets/product/not_enough_money_dialog.dart';
 import 'package:estike/widgets/product/product_ledger_item.dart';
 import 'package:estike/widgets/product/product_page_other_button.dart';
 import 'package:estike/widgets/user/modify_balance_dialog.dart';
@@ -190,84 +190,11 @@ class _ProductPageState extends State<ProductPage> {
         DateTime date = DateTime.now();
         if (date.hour > 4) {
           if (widget.user.balance < sum(productsToBuy)) {
-            return await showDialog(
+            return showDialog(
               context: context,
               builder: (context) {
-                bool showPasswordField = false;
-                TextEditingController controller = TextEditingController();
-                Function onPasswordCorrect = () {
-                  Navigator.pop(context);
-                  showDialog(
-                    barrierDismissible: false,
-                    context: context,
-                    builder: (context) {
-                      return FutureSuccessDialog(
-                          future: _postPurchases(
-                              usesCash: widget.user.id == User.cashUserId));
-                    },
-                  );
-                };
-                return StatefulBuilder(
-                  builder: (context, setState) {
-                    return Dialog(
-                      child: Padding(
-                        padding: const EdgeInsets.all(15),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Nincs elég pénz a számlán!',
-                              style: Theme.of(context).textTheme.headline5,
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text('OK'),
-                            ),
-                            Visibility(
-                              visible: showPasswordField,
-                              child: TextFormField(
-                                decoration:
-                                    InputDecoration(label: Text('Jelszó')),
-                                controller: controller,
-                                obscureText: true,
-                                autovalidateMode:
-                                    AutovalidateMode.onUserInteraction,
-                                validator: (value) {
-                                  if (value != null && value != adminPassword) {
-                                    return 'Nem jó';
-                                  }
-                                  return null;
-                                },
-                                onFieldSubmitted: (String value) {
-                                  if (value == adminPassword) {
-                                    onPasswordCorrect();
-                                  }
-                                },
-                              ),
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                if (!showPasswordField) {
-                                  setState(() {
-                                    showPasswordField = true;
-                                  });
-                                } else {
-                                  if (controller.text == adminPassword) {
-                                    onPasswordCorrect();
-                                  }
-                                }
-                              },
-                              child: Text('De!'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
+                return NotEnoughMoneyDialog(
+                    user: widget.user, productsToBuy: productsToBuy);
               },
             );
           }

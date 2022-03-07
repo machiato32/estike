@@ -107,6 +107,7 @@ class _MainPageState extends State<MainPage> {
         Visibility(
           visible: adminMode,
           child: ListTile(
+            tileColor: Colors.green,
             leading: Icon(Icons.admin_panel_settings),
             title: Text('Admin mód'),
           ),
@@ -114,10 +115,20 @@ class _MainPageState extends State<MainPage> {
         Visibility(
           visible: debugMode,
           child: ListTile(
+            tileColor: Colors.green,
             leading: Icon(Icons.bug_report),
             title: Text('Debug mód'),
           ),
         ),
+        Visibility(
+          visible: cleaningMode,
+          child: ListTile(
+            tileColor: Colors.green,
+            leading: Icon(Icons.cleaning_services),
+            title: Text('Takarító mód'),
+          ),
+        ),
+        Divider(),
         ListTile(
           leading: Icon(
             Icons.attach_money,
@@ -165,7 +176,7 @@ class _MainPageState extends State<MainPage> {
           ),
           onTap: () async {
             DateTime lastUpdated = DateTime.parse(lastUpdatedAt);
-
+            print(Purchase.allPurchases);
             if (User.allUsers
                         .where(
                             (element) => element.createdAt.isAfter(lastUpdated))
@@ -273,6 +284,31 @@ class _MainPageState extends State<MainPage> {
                         ),
                       ],
                     ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        Visibility(
+          visible: debugMode || adminMode,
+          child: ListTile(
+            leading: Icon(Icons.cleaning_services),
+            title: Text(cleaningMode ? 'Már nem takarítunk!' : 'Takarítunk!'),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => FutureSuccessDialog(
+                  future: Future.delayed(Duration(milliseconds: 300)).then(
+                    (value) {
+                      Navigator.pop(context);
+                      cleaningMode = !cleaningMode;
+                      if (cleaningMode) {
+                        adminMode = false;
+                      }
+                      setState(() {});
+                      return true;
+                    },
                   ),
                 ),
               );

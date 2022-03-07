@@ -1,5 +1,8 @@
+import 'package:estike/models/product.dart';
 import 'package:estike/models/purchase.dart';
 import 'package:estike/models/user.dart';
+import 'package:estike/widgets/future_success_dialog.dart';
+import 'package:estike/widgets/product/not_enough_money_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -126,10 +129,34 @@ class OtherButton extends StatelessWidget {
     if (otherTextController.text != '' &&
         int.tryParse(otherTextController.text) != null) {
       double amount = double.parse(otherTextController.text);
-      user.modifyBalance(-amount.ceil());
-      addPurchase(user.id, -1, -amount);
-      Navigator.pop(context);
-      Navigator.pop(context);
+      if (user.balance >= amount || DateTime.now().hour <= 4) {
+        showDialog(
+            context: context,
+            builder: (context) =>
+                FutureSuccessDialog(future: _postPurchase(amount, context)));
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => NotEnoughMoneyDialog(
+            user: user,
+            amount: amount,
+          ),
+        );
+      }
     }
+  }
+
+  Future<bool> _postPurchase(double amount, BuildContext context) async {
+    await user.modifyBalance(-amount.ceil());
+    addPurchase(user.id, Product.modifiedBalanceId, -amount);
+    Future.delayed(Duration(milliseconds: 300))
+        .then((value) => _onPostPurchases(context));
+    return true;
+  }
+
+  void _onPostPurchases(BuildContext context) {
+    Navigator.pop(context);
+    Navigator.pop(context);
+    Navigator.pop(context);
   }
 }

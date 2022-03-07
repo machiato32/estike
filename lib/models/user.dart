@@ -5,7 +5,8 @@ import 'product.dart';
 
 class User {
   static List<User> allUsers = [];
-  static const cashUserId = -1;
+  static const int cashUserId = -1;
+  static const int bartenderId = 1895;
   String name;
   int id;
   int balance;
@@ -91,8 +92,10 @@ class User {
 
   Future<bool> modifyBalance(int modification) async {
     try {
-      this.balance += modification;
-      await this.update();
+      if (this.id != User.bartenderId) {
+        this.balance += modification;
+        await this.update();
+      }
       return true;
     } catch (_) {
       throw _;
