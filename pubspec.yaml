@@ -15,7 +15,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.1.0
+version: 1.2.0
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -45,8 +45,8 @@ msix_config:
   display_name: Estike
   publisher_display_name: TheDevsWithTheDodos
   identity_name: DodoDevs.ec.Estike
-  msix_version: 1.1.0.0
-  logo_path: ./assets/estike_logo.png
+  msix_version: 1.2.0.0
+  logo_path: ./assets/E.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

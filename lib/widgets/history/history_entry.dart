@@ -86,10 +86,20 @@ class HistoryEntry extends StatelessWidget {
               child: IconButton(
                 onPressed: () async {
                   //TODO: dialog asking sure
+                  double amount = 0;
                   for (Purchase purchase in purchases) {
+                    if (purchase.userId != User.cashUserId &&
+                        purchase.productId != Product.modifiedBalanceId) {
+                      amount += purchase.amount *
+                          Product.allProducts
+                              .firstWhere(
+                                  (element) => element.id == purchase.productId)
+                              .price;
+                    }
                     await purchase.delete();
                     Purchase.allPurchases.remove(purchase);
                   }
+                  await user.modifyBalance(amount.toInt());
                   refreshAll();
                 },
                 icon: Icon(Icons.delete),
