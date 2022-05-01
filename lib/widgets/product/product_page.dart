@@ -365,6 +365,7 @@ class _ProductPageState extends State<ProductPage> {
             products, columnCount, ProductType.cocktail, smallText),
         _productTypeWidget(products, columnCount, ProductType.soda, smallText),
         _productTypeWidget(products, columnCount, ProductType.meal, smallText),
+        _productTypeWidget(products, columnCount, ProductType.other, smallText),
         OtherButton(
             user: widget.user,
             productColumnCount: columnCount,
@@ -405,36 +406,39 @@ class _ProductPageState extends State<ProductPage> {
         name = 'Egyebek';
         break;
     }
-    return Column(
-      children: [
-        TextButton(
-          onPressed: () {
-            setState(() {
-              whichToShow[type] = !whichToShow[type]!;
-            });
-          },
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Flexible(
-                child: Text(
-                  name,
-                  style: Theme.of(context).textTheme.headline3,
-                  overflow: TextOverflow.ellipsis,
+    return Visibility(
+      visible: products.any((element) => element.type == type),
+      child: Column(
+        children: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                whichToShow[type] = !whichToShow[type]!;
+              });
+            },
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Flexible(
+                  child: Text(
+                    name,
+                    style: Theme.of(context).textTheme.headline3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-              Icon(
-                whichToShow[type]! ? Icons.expand_less : Icons.expand_more,
-                size: 50,
-              )
-            ],
+                Icon(
+                  whichToShow[type]! ? Icons.expand_less : Icons.expand_more,
+                  size: 50,
+                )
+              ],
+            ),
           ),
-        ),
-        Visibility(
-          visible: whichToShow[type]!,
-          child: _generateGrid(type, products, count, smallText),
-        ),
-      ],
+          Visibility(
+            visible: whichToShow[type]!,
+            child: _generateGrid(type, products, count, smallText),
+          ),
+        ],
+      ),
     );
   }
 

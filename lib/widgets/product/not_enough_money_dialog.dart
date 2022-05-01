@@ -111,6 +111,7 @@ class _NotEnoughMoneyDialogState extends State<NotEnoughMoneyDialog> {
               child: TextFormField(
                 decoration: InputDecoration(label: Text('Jelszó')),
                 controller: controller,
+                autofocus: true,
                 obscureText: true,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {

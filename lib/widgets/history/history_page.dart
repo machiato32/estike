@@ -14,36 +14,56 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
+  bool _showBalanceModifications = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Előzmények'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _showBalanceModifications = !_showBalanceModifications;
+              });
+            },
+            icon: Icon(_showBalanceModifications
+                ? Icons.money_off
+                : Icons.monetization_on),
+          )
+        ],
       ),
       body: ListView(
         padding: EdgeInsets.all(15),
-        children: _generatePurchases(context),
+        children: _generatePurchases(context,
+            showBalanceModifications: _showBalanceModifications),
       ),
     );
   }
 
-  List<Widget> _generatePurchases(BuildContext context) {
+  List<Widget> _generatePurchases(BuildContext context,
+      {bool showBalanceModifications = false}) {
     List<Purchase> purchases = Purchase.allPurchases;
-    if (purchases
-            .where((element) => element.productId != Product.modifiedBalanceId)
-            .length !=
-        0) {
+    if (showBalanceModifications ||
+        purchases
+                .where(
+                    (element) => element.productId != Product.modifiedBalanceId)
+                .length !=
+            0) {
       Map<int, List<Purchase>> groupedPurchases = {};
       int i = 0;
       Purchase lastPurchase = purchases[i];
-      while (lastPurchase.productId == Product.modifiedBalanceId) {
-        i++;
-        if (i < purchases.length) {
-          lastPurchase = purchases[i];
-        } else {
-          return [];
+      if (!showBalanceModifications) {
+        while (lastPurchase.productId == Product.modifiedBalanceId) {
+          i++;
+          if (i < purchases.length) {
+            lastPurchase = purchases[i];
+          } else {
+            return [];
+          }
         }
       }
+
       int purchaseId = 0;
       groupedPurchases[purchaseId] = [];
       for (Purchase purchase in purchases) {
@@ -51,12 +71,14 @@ class _HistoryPageState extends State<HistoryPage> {
                 Duration(seconds: 1) &&
             purchase.userId == lastPurchase.userId) {
           groupedPurchases[purchaseId]!.add(purchase);
-        } else if (purchase.productId != Product.modifiedBalanceId) {
+        } else if (showBalanceModifications ||
+            purchase.productId != Product.modifiedBalanceId) {
           lastPurchase = purchase;
           purchaseId++;
           groupedPurchases[purchaseId] = [lastPurchase];
         }
       }
+      print(groupedPurchases);
       bool alreadyDrawnLine = false;
       return groupedPurchases.values
           .map((purchases) {

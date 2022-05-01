@@ -69,6 +69,23 @@ class HistoryEntry extends StatelessWidget {
           ),
         );
         columnWidgets.add(row);
+      } else {
+        Padding row = Padding(
+          padding: EdgeInsets.all(7),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
+                  'Feltöltés',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Text((purchase.amount).toInt().toString() + '🐪'),
+            ],
+          ),
+        );
+        columnWidgets.add(row);
       }
     }
     return Card(
@@ -95,6 +112,9 @@ class HistoryEntry extends StatelessWidget {
                               .firstWhere(
                                   (element) => element.id == purchase.productId)
                               .price;
+                    } else if (purchase.productId ==
+                        Product.modifiedBalanceId) {
+                      amount -= purchase.amount;
                     }
                     await purchase.delete();
                     Purchase.allPurchases.remove(purchase);

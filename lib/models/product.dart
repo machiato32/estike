@@ -106,8 +106,10 @@ class Product {
         where: 'id = ?', whereArgs: [this.id]);
   }
 
-  Future<int> delete() async {
-    allProducts.removeWhere((element) => element.id == this.id);
+  Future<int> delete({bool onlyFromDb = false}) async {
+    if (!onlyFromDb) {
+      allProducts.removeWhere((element) => element.id == this.id);
+    }
     Database db = await DatabaseHelper.instance.database;
     return await db.delete('products', where: 'id = ?', whereArgs: [this.id]);
   }

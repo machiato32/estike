@@ -69,6 +69,7 @@ class _MainPageState extends State<MainPage> {
                         TextField(
                           controller: passwordController,
                           obscureText: true,
+                          autofocus: true,
                           decoration: InputDecoration(
                             label: Text('Jelszó'),
                           ),
@@ -340,7 +341,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<bool> _deleteEverything() async {
-    lastUpdatedAt = DateTime.parse('2021-01-01 00:00:00').toIso8601String();
+    lastUpdatedAt = DateTime.now().toIso8601String();
     var prefs = await SharedPreferences.getInstance();
     prefs.setString('last_updated', lastUpdatedAt);
     await DatabaseHelper.instance.deleteDb();
@@ -369,6 +370,9 @@ class _MainPageState extends State<MainPage> {
     print(decoded['products']);
     // await DatabaseHelper.instance.deleteDb();
     User.allUsers = [];
+    for (Product product in Product.allProducts) {
+      await product.delete(onlyFromDb: true);
+    }
     Product.allProducts = [];
     Purchase.allPurchases = []; //ez nem biztos hogy kell
     for (Map<String, dynamic> user in users) {
