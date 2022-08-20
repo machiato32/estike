@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 import 'database_helper.dart';
 import 'models/product.dart';
 import 'models/user.dart';
@@ -40,11 +39,12 @@ void main() async {
     await initUsers();
     await initPurchases();
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    if(prefs.getString('last_updated')==null){
-      prefs.setString('last_updated', DateTime.parse('2021-01-01 00:00:00').toIso8601String());
-      lastUpdatedAt=DateTime.parse('2021-01-01 00:00:00').toIso8601String();
-    }else{
-      lastUpdatedAt=prefs.getString('last_updated')!;
+    if (prefs.getString('last_updated') == null) {
+      prefs.setString('last_updated',
+          DateTime.parse('2021-01-01 00:00:00').toIso8601String());
+      lastUpdatedAt = DateTime.parse('2021-01-01 00:00:00').toIso8601String();
+    } else {
+      lastUpdatedAt = prefs.getString('last_updated')!;
     }
     print(lastUpdatedAt);
   }
@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Estike',
       theme: ThemeData(
         brightness: Brightness.dark,
         primarySwatch: Colors.orange,

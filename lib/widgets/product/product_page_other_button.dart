@@ -129,7 +129,7 @@ class OtherButton extends StatelessWidget {
     if (otherTextController.text != '' &&
         int.tryParse(otherTextController.text) != null) {
       double amount = double.parse(otherTextController.text);
-      if (user.balance >= amount || DateTime.now().hour <= 4) {
+      if (user.balance >= amount) {
         showDialog(
             context: context,
             builder: (context) =>

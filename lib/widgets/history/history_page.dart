@@ -1,6 +1,7 @@
 import 'package:estike/config.dart';
 import 'package:estike/models/product.dart';
 import 'package:estike/widgets/history/history_entry.dart';
+import 'package:estike/widgets/history/history_filter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -14,6 +15,9 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
+  DateTime? _fromDate = DateTime.now().subtract(Duration(days: 8));
+  DateTime? _toDate;
+  int? _userId;
   bool _showBalanceModifications = false;
   @override
   Widget build(BuildContext context) {
@@ -23,28 +27,66 @@ class _HistoryPageState extends State<HistoryPage> {
         actions: [
           IconButton(
             onPressed: () {
-              setState(() {
-                _showBalanceModifications = !_showBalanceModifications;
-              });
+              showDialog(
+                context: context,
+                builder: (context) => HistoryFilterDialog(
+                  fromDate: _fromDate,
+                  toDate: _toDate,
+                  userId: _userId,
+                  onFromDateChanged: (DateTime? fromDate) {
+                    _fromDate = _fromDate;
+                  },
+                  onToDateChanged: (toDate) {
+                    _toDate = toDate;
+                  },
+                  onUserIdChanged: (userId) {
+                    _userId = userId;
+                  },
+                  showBalanceModifications: _showBalanceModifications,
+                  onBalanceModificationsChanged: (showBalanceModifications) {
+                    _showBalanceModifications = showBalanceModifications;
+                  },
+                ),
+              ).then((value) => setState(() {
+                    print(_userId);
+                  }));
             },
-            icon: Icon(_showBalanceModifications
-                ? Icons.money_off
-                : Icons.monetization_on),
+            icon: Icon(Icons.filter_list_alt),
           )
         ],
       ),
       body: ListView(
         padding: EdgeInsets.all(15),
         children: _generatePurchases(context,
-            showBalanceModifications: _showBalanceModifications),
+            showBalanceModifications: _showBalanceModifications,
+            userId: _userId,
+            toDate: _toDate,
+            fromDate: _fromDate),
       ),
     );
   }
 
   List<Widget> _generatePurchases(BuildContext context,
-      {bool showBalanceModifications = false}) {
+      {bool showBalanceModifications = false,
+      DateTime? fromDate,
+      DateTime? toDate,
+      int? userId}) {
     List<Purchase> purchases = Purchase.allPurchases;
-    if (showBalanceModifications ||
+    if (fromDate != null) {
+      purchases = purchases
+          .where((purchase) => purchase.createdAt.isAfter(fromDate))
+          .toList();
+    }
+    if (toDate != null) {
+      purchases = purchases
+          .where((purchase) => purchase.createdAt.isBefore(toDate))
+          .toList();
+    }
+    if (userId != null) {
+      purchases =
+          purchases.where((purchase) => purchase.userId == userId).toList();
+    }
+    if ((showBalanceModifications && purchases.length != 0) ||
         purchases
                 .where(
                     (element) => element.productId != Product.modifiedBalanceId)

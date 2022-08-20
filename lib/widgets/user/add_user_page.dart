@@ -1,8 +1,11 @@
 import 'package:estike/config.dart';
+import 'package:estike/models/purchase.dart';
 import 'package:estike/models/user.dart';
 import 'package:estike/widgets/future_success_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import '../../models/product.dart';
 
 class AddUserPage extends StatefulWidget {
   const AddUserPage({Key? key}) : super(key: key);
@@ -187,6 +190,7 @@ class _AddUserPageState extends State<AddUserPage> {
   Future<bool> _postUser(String name, int id, int balance) async {
     try {
       await addUser(name, id, balance: balance);
+      await addPurchase(id, Product.modifiedBalanceId, balance.toDouble());
 
       Future.delayed(Duration(milliseconds: 300))
           .then((value) => _onPostUser());

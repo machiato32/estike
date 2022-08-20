@@ -10,6 +10,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_window_close/flutter_window_close.dart';
 
 import '../config.dart';
 import '../database_helper.dart';
@@ -31,6 +32,79 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    DateTime lastUpdated = DateTime.parse(lastUpdatedAt);
+    FlutterWindowClose.setWindowShouldCloseHandler(() async {
+      if (!(User.allUsers
+                  .where((element) => element.createdAt.isAfter(lastUpdated))
+                  .length ==
+              0 &&
+          Purchase.allPurchases
+                  .where((element) => element.createdAt.isAfter(lastUpdated))
+                  .length ==
+              0)) {
+        return await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                  title: const Text(
+                      'Töltsd fel az adatokat mielőtt bezárod a programot!'),
+                  actions: [
+                    ElevatedButton(
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return Dialog(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(15),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Add meg a jelszót!',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline5,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        TextField(
+                                          controller: passwordController,
+                                          obscureText: true,
+                                          autofocus: true,
+                                          decoration: InputDecoration(
+                                            label: Text('Jelszó'),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 10,
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            if (passwordController.text ==
+                                                adminPassword) {
+                                              Navigator.pop(context, true);
+                                            }
+                                          },
+                                          child: Text('OK'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).then((value) {
+                            passwordController.text = '';
+                            if (value != null) Navigator.pop(context, true);
+                          });
+                        },
+                        child: const Text('De én ki akarok lépni!')),
+                    ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Rendben')),
+                  ]);
+            });
+      }
+      return Future.value(true);
+    });
   }
 
   @override

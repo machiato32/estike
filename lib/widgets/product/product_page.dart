@@ -187,17 +187,14 @@ class _ProductPageState extends State<ProductPage> {
   void buyProducts() async {
     if (productsToBuy.keys.length != 0) {
       if (widget.user.id != User.cashUserId) {
-        DateTime date = DateTime.now();
-        if (date.hour > 4) {
-          if (widget.user.balance < sum(productsToBuy)) {
-            return showDialog(
-              context: context,
-              builder: (context) {
-                return NotEnoughMoneyDialog(
-                    user: widget.user, productsToBuy: productsToBuy);
-              },
-            );
-          }
+        if (widget.user.balance < sum(productsToBuy)) {
+          return showDialog(
+            context: context,
+            builder: (context) {
+              return NotEnoughMoneyDialog(
+                  user: widget.user, productsToBuy: productsToBuy);
+            },
+          );
         }
       }
       showDialog(
