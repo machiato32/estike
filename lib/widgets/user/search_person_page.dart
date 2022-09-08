@@ -1,5 +1,5 @@
 import 'dart:math';
-
+import 'dart:io';
 import 'package:estike/models/product.dart';
 import 'package:estike/models/purchase.dart';
 import 'package:estike/widgets/product/product_page.dart';
@@ -35,7 +35,7 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
         padding: EdgeInsets.all(10),
         children: [
           TextFormField(
-            // autofocus: true,
+            autofocus: (Platform.isWindows || Platform.isLinux),
             // focusNode: _focusNode,
             onChanged: (value) {
               setState(() {
