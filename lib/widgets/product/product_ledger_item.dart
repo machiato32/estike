@@ -20,13 +20,20 @@ class ProductLedgerItem extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.fromLTRB(10, 10, 0, 10),
       child: Row(
-        // mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Flexible(
             child: Text(
-              (itemNum%1==0?itemNum.toStringAsFixed(0):itemNum.toString()) + ' x ' + product.name,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.headline6,
+              (itemNum % 1 == 0
+                      ? itemNum.toStringAsFixed(0)
+                      : itemNum.toString()) +
+                  ' x ' +
+                  product.name,
+              overflow: TextOverflow.clip,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge!
+                  .copyWith(color: Theme.of(context).colorScheme.onBackground),
             ),
           ),
           Row(
@@ -36,22 +43,38 @@ class ProductLedgerItem extends StatelessWidget {
                 onPressed: () {
                   removeProductFromList(product);
                 },
-                icon: Icon(Icons.remove),
+                icon: Icon(
+                  Icons.remove,
+                  size: 15,
+                ),
               ),
-              TextButton(onPressed: (){
-                halfProductOnList(product);
-              }, child: Text('½', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),),),
+              TextButton(
+                onPressed: () {
+                  halfProductOnList(product);
+                },
+                child: Text(
+                  '½',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onBackground,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
               IconButton(
                 onPressed: () {
                   addProductToList(product);
                 },
-                icon: Icon(Icons.add),
+                icon: Icon(
+                  Icons.add,
+                  color: Theme.of(context).colorScheme.onBackground,
+                ),
               ),
               Container(
                 width: 90,
                 child: Text(
                   (product.price * itemNum).ceil().toString() + '🐪',
-                  style: Theme.of(context).textTheme.headline5,
+                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                      color: Theme.of(context).colorScheme.onBackground),
                 ),
               ),
             ],

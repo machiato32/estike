@@ -35,8 +35,8 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
         padding: EdgeInsets.all(10),
         children: [
           TextFormField(
-            autofocus: true,
-            focusNode: _focusNode,
+            // autofocus: true,
+            // focusNode: _focusNode,
             onChanged: (value) {
               setState(() {
                 searchWord = value;
@@ -139,7 +139,8 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
     double widgetWidth = widget.width;
     bool smallText = false;
     int columnCount = (widgetWidth / 200).floor();
-    if (widgetWidth < 400) {
+    print(widgetWidth);
+    if (widgetWidth < 800) {
       smallText = true;
       columnCount = (widgetWidth / 150).floor();
     }

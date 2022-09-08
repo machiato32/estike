@@ -178,7 +178,12 @@ class _AddUserPageState extends State<AddUserPage> {
                     );
                   }
                 },
-                child: Icon(Icons.send),
+                style: ElevatedButton.styleFrom(
+                    primary: Theme.of(context).colorScheme.primary),
+                child: Icon(
+                  Icons.send,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               ),
             )
           ],

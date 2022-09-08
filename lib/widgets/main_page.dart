@@ -203,6 +203,33 @@ class _MainPageState extends State<MainPage> {
             title: Text('Takarító mód'),
           ),
         ),
+        Visibility(
+          visible: false,
+          child: ListTile(
+            leading: Icon(Icons.web),
+            title: Text('Másik URL használata'),
+            onTap: () {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    TextEditingController controller = TextEditingController();
+                    return Dialog(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: TextField(
+                          onSubmitted: (text) {
+                            APP_URL = text;
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'https://estike.lenderapp.net/api',
+                          ),
+                        ),
+                      ),
+                    );
+                  });
+            },
+          ),
+        ),
         Divider(),
         ListTile(
           leading: Icon(
@@ -393,7 +420,7 @@ class _MainPageState extends State<MainPage> {
       ],
     );
     double width = MediaQuery.of(context).size.width;
-    bool big = width > 1200;
+    bool big = width > 600;
     return Scaffold(
       appBar: big
           ? null

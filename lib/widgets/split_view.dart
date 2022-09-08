@@ -12,7 +12,7 @@ class _SplitViewState extends State<SplitView> {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    if (width > 1200) {
+    if (width > 600) {
       return Table(
         columnWidths: {
           0: FractionColumnWidth(0.2),

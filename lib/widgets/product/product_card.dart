@@ -13,9 +13,13 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color cardColor = ElevationOverlay.applyOverlay(
+        context, Theme.of(context).colorScheme.surface, 10);
+    Color onCardColor = Theme.of(context).colorScheme.onSurfaceVariant;
     return AspectRatio(
       aspectRatio: 1,
       child: Card(
+        color: cardColor,
         child: InkWell(
           borderRadius: BorderRadius.circular(30),
           onTap: () {
@@ -38,18 +42,20 @@ class ProductCard extends StatelessWidget {
                     Center(
                       child: Text(
                         product.name,
-                        style: small
-                            ? Theme.of(context).textTheme.headline5
-                            : Theme.of(context).textTheme.headline4,
+                        style: (small
+                                ? Theme.of(context).textTheme.headline5
+                                : Theme.of(context).textTheme.headline4)!
+                            .copyWith(color: onCardColor),
                         textAlign: TextAlign.center,
                       ),
                     ),
                     Center(
                       child: Text(
                         product.price.toString() + '🐪',
-                        style: small
-                            ? Theme.of(context).textTheme.headline6
-                            : Theme.of(context).textTheme.headline5,
+                        style: (small
+                                ? Theme.of(context).textTheme.headline6
+                                : Theme.of(context).textTheme.headline5)!
+                            .copyWith(color: onCardColor),
                         textAlign: TextAlign.center,
                       ),
                     ),

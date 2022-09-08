@@ -44,7 +44,7 @@ class _ProductPageState extends State<ProductPage> {
 
   @override
   Widget build(BuildContext context) {
-    smallScreen = MediaQuery.of(context).size.width <= 1200;
+    smallScreen = MediaQuery.of(context).size.width <= 600;
     return Shortcuts(
       shortcuts: <LogicalKeySet, Intent>{
         LogicalKeySet(LogicalKeyboardKey.escape): PopIntent(),
@@ -72,15 +72,12 @@ class _ProductPageState extends State<ProductPage> {
                           children: [
                             Text(
                               "Feltöltés",
-                              style:
-                                  TextStyle(color: Colors.black, fontSize: 20),
                             ),
                             SizedBox(
                               width: 5,
                             ),
                             Icon(
                               Icons.payments,
-                              color: Colors.black,
                             ),
                           ],
                         ),
@@ -219,12 +216,14 @@ class _ProductPageState extends State<ProductPage> {
           visible: productsToBuy.keys.length > 0,
           child: Center(
             child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  primary: Theme.of(context).colorScheme.primary),
               onPressed: () {
                 buyProducts();
               },
               child: Icon(
                 Icons.send,
-                color: Colors.black,
+                color: Theme.of(context).colorScheme.onPrimary,
               ),
             ),
           ),
@@ -246,13 +245,25 @@ class _ProductPageState extends State<ProductPage> {
                       children: [
                         Text(
                           widget.user.id.toString() + ' - ',
-                          style: Theme.of(context).textTheme.headline5,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyLarge!
+                              .copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onBackground),
                         ),
                         Flexible(
                           child: Text(
                             widget.user.name,
                             overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.headline5,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge!
+                                .copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onBackground),
                           ),
                         ),
                       ],
@@ -263,7 +274,10 @@ class _ProductPageState extends State<ProductPage> {
             ),
             Text(
               widget.user.balance.toString() + '🐪',
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge!
+                  .copyWith(color: Theme.of(context).colorScheme.onBackground),
             ),
           ],
         ),
@@ -284,7 +298,8 @@ class _ProductPageState extends State<ProductPage> {
               Divider(),
               Text(
                 'Összesen: ' + sum(productsToBuy).toString() + '🐪',
-                style: Theme.of(context).textTheme.headline5,
+                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.onBackground),
               ),
             ],
           ),
@@ -332,7 +347,7 @@ class _ProductPageState extends State<ProductPage> {
     }
     bool smallText = false;
     int columnCount = (usablePartWidth / 200).floor();
-    if (usablePartWidth < 400) {
+    if (usablePartWidth < 600) {
       smallText = true;
       columnCount = (usablePartWidth / 150).floor();
     }

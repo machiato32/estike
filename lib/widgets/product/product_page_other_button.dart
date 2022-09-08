@@ -48,21 +48,18 @@ class OtherButton extends StatelessWidget {
                       children: [
                         Text(
                           "Egyéni",
-                          style: smallScreen
-                              ? Theme.of(context)
-                                  .textTheme
-                                  .headline5!
-                                  .copyWith(color: Colors.black)
-                              : Theme.of(context)
-                                  .textTheme
-                                  .headline4!
-                                  .copyWith(color: Colors.black),
+                          style: (smallScreen
+                                  ? Theme.of(context).textTheme.headline5
+                                  : Theme.of(context).textTheme.headline4)!
+                              .copyWith(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary),
                           textAlign: TextAlign.center,
                         ),
                         Flexible(
                           child: Icon(
                             Icons.construction,
-                            color: Colors.black,
+                            color: Theme.of(context).colorScheme.onPrimary,
                             size: smallScreen ? 20 : 30,
                           ),
                         ),

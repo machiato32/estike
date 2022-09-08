@@ -58,20 +58,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Estike',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.orange,
-        scaffoldBackgroundColor: Colors.grey[900],
-        appBarTheme: AppBarTheme(
-          color: Colors.orange,
-          foregroundColor: Colors.black,
-        ),
-        dialogTheme: DialogTheme(
-          backgroundColor: Colors.grey[800],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
+      theme: ThemeData.from(
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.orange, brightness: Brightness.dark),
+        useMaterial3: true,
+      ).copyWith(
         cardTheme: CardTheme(
           margin: EdgeInsets.all(5),
           shape: RoundedRectangleBorder(

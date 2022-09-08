@@ -29,10 +29,20 @@ class UserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color cardColor;
+    Color onCardColor;
+    if (user.balance < 0) {
+      cardColor = Theme.of(context).colorScheme.error;
+      onCardColor = Theme.of(context).colorScheme.onError;
+    } else {
+      cardColor = ElevationOverlay.applyOverlay(
+          context, Theme.of(context).colorScheme.surface, 10);
+      onCardColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    }
     return AspectRatio(
       aspectRatio: 1,
       child: Card(
-        color: user.balance < 0 ? Colors.red[300] : Colors.grey[800],
+        color: cardColor,
         child: InkWell(
           borderRadius: BorderRadius.circular(30),
           onTap: () {
@@ -54,17 +64,19 @@ class UserCard extends StatelessWidget {
                         children: [
                           Text(
                             user.id.toString(),
-                            style: small
-                                ? Theme.of(context).textTheme.headline6
-                                : Theme.of(context).textTheme.headline5,
+                            style: (small
+                                    ? Theme.of(context).textTheme.headline6
+                                    : Theme.of(context).textTheme.headline5)!
+                                .copyWith(color: onCardColor),
                             textAlign: TextAlign.center,
                           ),
                           Flexible(
                             child: Text(
                               user.name,
-                              style: small
-                                  ? Theme.of(context).textTheme.headline5
-                                  : Theme.of(context).textTheme.headline4,
+                              style: (small
+                                      ? Theme.of(context).textTheme.headline5
+                                      : Theme.of(context).textTheme.headline4)!
+                                  .copyWith(color: onCardColor),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -74,9 +86,10 @@ class UserCard extends StatelessWidget {
                     Center(
                       child: Text(
                         user.balance.toString() + '🐪',
-                        style: small
-                            ? Theme.of(context).textTheme.headline6
-                            : Theme.of(context).textTheme.headline5,
+                        style: (small
+                                ? Theme.of(context).textTheme.headline6
+                                : Theme.of(context).textTheme.headline5)!
+                            .copyWith(color: onCardColor),
                         textAlign: TextAlign.center,
                       ),
                     ),

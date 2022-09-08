@@ -66,7 +66,7 @@ class _ModifyBalanceState extends State<ModifyBalance> {
                       .compareTo(user2.productsBought.values
                           .toList()
                           .fold(0, (previous, current) => previous + current)));
-                  if (users.length == 0) return Container();
+                  // if (users.length == 0) return Container();
                   double width = MediaQuery.of(context).size.width;
                   bool small = false;
                   int count = (width / 200).floor();
@@ -93,36 +93,39 @@ class _ModifyBalanceState extends State<ModifyBalance> {
                       SizedBox(
                         height: 10,
                       ),
-                      GridView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: count,
-                          ),
-                          itemCount: min(users.length, 30),
-                          itemBuilder: (BuildContext context, int index) {
-                            return UserCard(
-                              user: users[index],
-                              small: small,
-                              onTap: (context) {
-                                setState(() {
-                                  selectedUser = users[index];
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return ModifyBalanceDialog(
-                                            selectedUser: selectedUser!);
-                                      });
-                                });
-                              },
-                              resetTextField: () {
-                                setState(() {
-                                  searchWord = '';
-                                });
-                              },
-                            );
-                          }),
+                      Visibility(
+                        visible: users.length != 0,
+                        child: GridView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: count,
+                            ),
+                            itemCount: min(users.length, 30),
+                            itemBuilder: (BuildContext context, int index) {
+                              return UserCard(
+                                user: users[index],
+                                small: small,
+                                onTap: (context) {
+                                  setState(() {
+                                    selectedUser = users[index];
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return ModifyBalanceDialog(
+                                              selectedUser: selectedUser!);
+                                        });
+                                  });
+                                },
+                                resetTextField: () {
+                                  setState(() {
+                                    searchWord = '';
+                                  });
+                                },
+                              );
+                            }),
+                      ),
                     ],
                   );
                 } else {
