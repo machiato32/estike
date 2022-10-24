@@ -44,7 +44,7 @@ class _ProductPageState extends State<ProductPage> {
 
   @override
   Widget build(BuildContext context) {
-    smallScreen = MediaQuery.of(context).size.width <= 600;
+    smallScreen = MediaQuery.of(context).size.width <= 800;
     return Shortcuts(
       shortcuts: <LogicalKeySet, Intent>{
         LogicalKeySet(LogicalKeyboardKey.escape): PopIntent(),
@@ -217,7 +217,7 @@ class _ProductPageState extends State<ProductPage> {
           child: Center(
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                  primary: Theme.of(context).colorScheme.primary),
+                  backgroundColor: Theme.of(context).colorScheme.primary),
               onPressed: () {
                 buyProducts();
               },
@@ -325,7 +325,7 @@ class _ProductPageState extends State<ProductPage> {
         await widget.user.modifyBalance(-sum(productsToBuy).ceil());
       }
 
-      Future.delayed(Duration(milliseconds: 300))
+      Future.delayed(Duration(milliseconds: 600))
           .then((value) => _onPostPurchases());
       return true;
     } catch (_) {
@@ -429,11 +429,12 @@ class _ProductPageState extends State<ProductPage> {
               });
             },
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Flexible(
                   child: Text(
-                    name,
+                    ' ' + name,
                     style: Theme.of(context).textTheme.headline3,
                     overflow: TextOverflow.ellipsis,
                   ),

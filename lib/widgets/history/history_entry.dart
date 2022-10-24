@@ -26,14 +26,17 @@ class HistoryEntry extends StatelessWidget {
                 Flexible(
                   child: Text(
                     user.name,
-                    style: Theme.of(context).textTheme.headline6,
+                    style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 user.id != -1
                     ? Text(
                         ' - ' + user.id.toString() + '   ',
-                        style: Theme.of(context).textTheme.headline6,
+                        style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant),
                       )
                     : Container(),
               ],
@@ -43,7 +46,8 @@ class HistoryEntry extends StatelessWidget {
             DateFormat('MM-dd - HH:mm').format(
               purchases[0].updatedAt,
             ),
-            style: Theme.of(context).textTheme.bodyText1,
+            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -61,10 +65,16 @@ class HistoryEntry extends StatelessWidget {
                 child: Text(
                   purchase.amount.toString() + ' x ' + productBought.name,
                   overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
               ),
-              Text((purchase.amount * productBought.price).toInt().toString() +
-                  '🐪'),
+              Text(
+                (purchase.amount * productBought.price).toInt().toString() +
+                    '🐪',
+                style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
             ],
           ),
         );
@@ -79,9 +89,15 @@ class HistoryEntry extends StatelessWidget {
                 child: Text(
                   'Feltöltés',
                   overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
               ),
-              Text((purchase.amount).toInt().toString() + '🐪'),
+              Text(
+                (purchase.amount).toInt().toString() + '🐪',
+                style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
             ],
           ),
         );
@@ -122,7 +138,8 @@ class HistoryEntry extends StatelessWidget {
                   await user.modifyBalance(amount.toInt());
                   refreshAll();
                 },
-                icon: Icon(Icons.delete),
+                icon: Icon(Icons.delete,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             ),
           ],

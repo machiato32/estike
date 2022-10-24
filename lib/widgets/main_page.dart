@@ -1,12 +1,12 @@
 import 'dart:convert';
 
 import 'package:estike/http_handler.dart';
+import 'package:estike/widgets/admin_settings_dialog.dart';
 import 'package:estike/widgets/future_success_dialog.dart';
 import 'package:estike/widgets/split_view.dart';
 import 'package:estike/widgets/user/add_user_page.dart';
 import 'package:estike/widgets/user/modify_balance.dart';
 import 'package:estike/widgets/user/search_person_page.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,6 +17,7 @@ import '../database_helper.dart';
 import '../models/product.dart';
 import '../models/purchase.dart';
 import '../models/user.dart';
+import 'about_dialog.dart';
 import 'history/history_page.dart';
 
 class MainPage extends StatefulWidget {
@@ -32,8 +33,8 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    DateTime lastUpdated = DateTime.parse(lastUpdatedAt);
     FlutterWindowClose.setWindowShouldCloseHandler(() async {
+      DateTime lastUpdated = DateTime.parse(lastUpdatedAt);
       if (!(User.allUsers
                   .where((element) => element.createdAt.isAfter(lastUpdated))
                   .length ==
@@ -67,24 +68,33 @@ class _MainPageState extends State<MainPage> {
                                               .headline5,
                                           textAlign: TextAlign.center,
                                         ),
-                                        TextField(
+                                        TextFormField(
                                           controller: passwordController,
                                           obscureText: true,
                                           autofocus: true,
                                           decoration: InputDecoration(
                                             label: Text('Jelszó'),
                                           ),
+                                          autovalidateMode: AutovalidateMode
+                                              .onUserInteraction,
+                                          validator: (String? text) {
+                                            if (text == null) {
+                                              return 'Jaj!';
+                                            }
+                                            if (text != adminPassword) {
+                                              return 'Helytelen jelszó!';
+                                            }
+                                            return null;
+                                          },
+                                          onFieldSubmitted: (text) {
+                                            _exitAppControl();
+                                          },
                                         ),
                                         SizedBox(
                                           height: 10,
                                         ),
                                         TextButton(
-                                          onPressed: () {
-                                            if (passwordController.text ==
-                                                adminPassword) {
-                                              Navigator.pop(context, true);
-                                            }
-                                          },
+                                          onPressed: _exitAppControl,
                                           child: Text('OK'),
                                         ),
                                       ],
@@ -105,6 +115,22 @@ class _MainPageState extends State<MainPage> {
       }
       return Future.value(true);
     });
+  }
+
+  void _exitAppControl() {
+    if (passwordController.text == adminPassword) {
+      Navigator.pop(context, true);
+    }
+  }
+
+  void _onAdminSubmitted() {
+    if (passwordController.text == adminPassword) {
+      Navigator.pop(context);
+      passwordController.text = '';
+      setState(() {
+        adminMode = !adminMode;
+      });
+    }
   }
 
   @override
@@ -137,7 +163,13 @@ class _MainPageState extends State<MainPage> {
                           adminMode
                               ? 'Kilépés admin módból'
                               : 'Belépés admin módba',
-                          style: Theme.of(context).textTheme.headline5,
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall!
+                              .copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant),
                           textAlign: TextAlign.center,
                         ),
                         TextField(
@@ -147,20 +179,13 @@ class _MainPageState extends State<MainPage> {
                           decoration: InputDecoration(
                             label: Text('Jelszó'),
                           ),
+                          onSubmitted: (text) => _onAdminSubmitted(),
                         ),
                         SizedBox(
                           height: 10,
                         ),
                         TextButton(
-                          onPressed: () {
-                            if (passwordController.text == adminPassword) {
-                              Navigator.pop(context);
-                              passwordController.text = '';
-                              setState(() {
-                                adminMode = !adminMode;
-                              });
-                            }
-                          },
+                          onPressed: _onAdminSubmitted,
                           child: Text('OK'),
                         ),
                       ],
@@ -181,240 +206,380 @@ class _MainPageState extends State<MainPage> {
         ),
         Visibility(
           visible: adminMode,
-          child: ListTile(
-            tileColor: Colors.green,
-            leading: Icon(Icons.admin_panel_settings),
-            title: Text('Admin mód'),
+          child: Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: ListTile(
+              tileColor: Theme.of(context).colorScheme.tertiaryContainer,
+              leading: Icon(
+                Icons.admin_panel_settings,
+                color: Theme.of(context).colorScheme.onTertiaryContainer,
+              ),
+              title: Text(
+                'Admin mód',
+                style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.onTertiaryContainer),
+              ),
+            ),
           ),
         ),
         Visibility(
           visible: debugMode,
-          child: ListTile(
-            tileColor: Colors.green,
-            leading: Icon(Icons.bug_report),
-            title: Text('Debug mód'),
+          child: Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: ListTile(
+              tileColor: Theme.of(context).colorScheme.tertiaryContainer,
+              leading: Icon(
+                Icons.bug_report,
+                color: Theme.of(context).colorScheme.onTertiaryContainer,
+              ),
+              title: Text(
+                'Debug mód',
+                style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.onTertiaryContainer),
+              ),
+            ),
           ),
         ),
         Visibility(
           visible: cleaningMode,
-          child: ListTile(
-            tileColor: Colors.green,
-            leading: Icon(Icons.cleaning_services),
-            title: Text('Takarító mód'),
-          ),
-        ),
-        Visibility(
-          visible: false,
-          child: ListTile(
-            leading: Icon(Icons.web),
-            title: Text('Másik URL használata'),
-            onTap: () {
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    TextEditingController controller = TextEditingController();
-                    return Dialog(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: TextField(
-                          onSubmitted: (text) {
-                            APP_URL = text;
-                          },
-                          decoration: InputDecoration(
-                            hintText: 'https://estike.lenderapp.net/api',
-                          ),
-                        ),
-                      ),
-                    );
-                  });
-            },
+          child: Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: ListTile(
+              tileColor: Theme.of(context).colorScheme.tertiaryContainer,
+              leading: Icon(
+                Icons.cleaning_services,
+                color: Theme.of(context).colorScheme.onTertiaryContainer,
+              ),
+              title: Text(
+                'Takarító mód',
+                style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.onTertiaryContainer),
+              ),
+            ),
           ),
         ),
         Divider(),
-        ListTile(
-          leading: Icon(
-            Icons.attach_money,
+        Padding(
+          padding: EdgeInsets.only(right: 12),
+          child: ListTile(
+            leading: Icon(Icons.attach_money,
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
+            title: Text(
+              "Egyenleg szerkesztése",
+              style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            onTap: () {
+              Navigator.of(context)
+                  .push(
+                      MaterialPageRoute(builder: (context) => ModifyBalance()))
+                  .then((value) => resetAll());
+            },
           ),
-          title: Text(
-            "Egyenleg szerkesztése",
-          ),
-          onTap: () {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => ModifyBalance()))
-                .then((value) => resetAll());
-          },
         ),
-        ListTile(
-          leading: Icon(
-            Icons.person_add,
+        Padding(
+          padding: EdgeInsets.only(right: 12),
+          child: ListTile(
+            leading: Icon(
+              Icons.person_add,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            title: Text(
+              "Felhasználó hozzáadása",
+              style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            onTap: () {
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => AddUserPage()))
+                  .then((value) => resetAll());
+            },
           ),
-          title: Text(
-            "Felhasználó hozzáadása",
-          ),
-          onTap: () {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => AddUserPage()))
-                .then((value) => resetAll());
-          },
         ),
-        ListTile(
-          leading: Icon(
-            Icons.history,
+        Padding(
+          padding: EdgeInsets.only(right: 12),
+          child: ListTile(
+            leading: Icon(Icons.history,
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
+            title: Text(
+              "Előzmények",
+              style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            onTap: () {
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => HistoryPage()));
+            },
           ),
-          title: Text(
-            "Előzmények",
-          ),
-          onTap: () {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => HistoryPage()));
-          },
         ),
-        ListTile(
-          leading: Icon(
-            Icons.arrow_circle_down_outlined,
+        Padding(
+          padding: EdgeInsets.only(right: 12),
+          child: ListTile(
+            leading: Icon(Icons.arrow_circle_down_outlined,
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
+            title: Text(
+              "Letöltés",
+              style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            onTap: () async {
+              DateTime lastUpdated = DateTime.parse(lastUpdatedAt);
+              if (User.allUsers
+                          .where((element) =>
+                              element.createdAt.isAfter(lastUpdated))
+                          .length ==
+                      0 &&
+                  Purchase.allPurchases
+                          .where((element) =>
+                              element.createdAt.isAfter(lastUpdated))
+                          .length ==
+                      0) {
+                showDialog(
+                    barrierDismissible: false,
+                    context: context,
+                    builder: (context) => FutureSuccessDialog(
+                          future: _downloadData(),
+                        ));
+              } else {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return Dialog(
+                        child: Container(
+                          padding: EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Előbb töltsd fel az adatokat!',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge!
+                                    .copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant),
+                              ),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              TextButton(
+                                child: Text('OK'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    });
+              }
+            },
           ),
-          title: Text(
-            "Letöltés",
-          ),
-          onTap: () async {
-            DateTime lastUpdated = DateTime.parse(lastUpdatedAt);
-            print(Purchase.allPurchases);
-            if (User.allUsers
-                        .where(
-                            (element) => element.createdAt.isAfter(lastUpdated))
-                        .length ==
-                    0 &&
-                Purchase.allPurchases
-                        .where(
-                            (element) => element.createdAt.isAfter(lastUpdated))
-                        .length ==
-                    0) {
-              showDialog(
+        ),
+        Padding(
+          padding: EdgeInsets.only(right: 12),
+          child: ListTile(
+            leading: Icon(Icons.arrow_circle_up_outlined,
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
+            title: Text(
+              "Feltöltés",
+              style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            onTap: () async {
+              if (debugMode == false) {
+                showDialog(
                   barrierDismissible: false,
                   context: context,
                   builder: (context) => FutureSuccessDialog(
-                        future: _downloadData(),
-                      ));
-            } else {
+                    future: _uploadData(),
+                  ),
+                );
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => Dialog(
+                    child: Padding(
+                      padding: const EdgeInsets.all(15),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Debug modban nem lehet feltolteni',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge!
+                                .copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(right: 12),
+          child: ListTile(
+            leading: Icon(
+              Icons.info,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            title: Text(
+              "Infó",
+              style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            onTap: () {
               showDialog(
                   context: context,
                   builder: (context) {
-                    return Dialog(
-                      child: Container(
-                        padding: EdgeInsets.all(20),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Előbb töltsd fel az adatokat!',
-                              style: Theme.of(context).textTheme.headline5,
-                            ),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            TextButton(
-                              child: Text('OK'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            )
-                          ],
-                        ),
-                      ),
-                    );
+                    return OwnAboutDialog();
                   });
-            }
-          },
-        ),
-        ListTile(
-          leading: Icon(
-            Icons.arrow_circle_up_outlined,
-          ),
-          title: Text(
-            "Feltöltés",
-          ),
-          onTap: () async {
-            if (debugMode == false) {
-              showDialog(
-                barrierDismissible: false,
-                context: context,
-                builder: (context) => FutureSuccessDialog(
-                  future: _uploadData(),
-                ),
-              );
-            } else {
-              showDialog(
-                context: context,
-                builder: (context) => Dialog(
-                  child: Padding(
-                    padding: const EdgeInsets.all(15),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('Debug modban nem lehet feltolteni'),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }
-          },
-        ),
-        Visibility(
-          visible: debugMode || adminMode,
-          child: ListTile(
-            leading: Icon(Icons.restart_alt),
-            title: Text('Minden adat törlése'),
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (context) => Dialog(
-                  child: Padding(
-                    padding: EdgeInsets.all(15),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('Biztos ki akarsz törölni minden adatot?'),
-                        TextButton(
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) => FutureSuccessDialog(
-                                    future: _deleteEverything()));
-                          },
-                          child: Text('Igen'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
             },
           ),
         ),
         Visibility(
+          visible: debugMode || adminMode || cleaningMode,
+          child: Divider(),
+        ),
+        Visibility(
+          visible: adminMode || debugMode,
+          child: Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: ListTile(
+              leading: Icon(Icons.settings,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              title: Text('Admin beállítások',
+                  style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              onTap: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AdminSettingsDialog();
+                    });
+              },
+            ),
+          ),
+        ),
+        Visibility(
           visible: debugMode || adminMode,
-          child: ListTile(
-            leading: Icon(Icons.cleaning_services),
-            title: Text(cleaningMode ? 'Már nem takarítunk!' : 'Takarítunk!'),
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (context) => FutureSuccessDialog(
-                  future: Future.delayed(Duration(milliseconds: 300)).then(
-                    (value) {
-                      Navigator.pop(context);
-                      cleaningMode = !cleaningMode;
-                      if (cleaningMode) {
+          child: Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: ListTile(
+              leading: Icon(Icons.restart_alt,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              title: Text(
+                'Minden adat törlése',
+                style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => Dialog(
+                    child: Padding(
+                      padding: EdgeInsets.all(15),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Biztos ki akarsz törölni minden adatot?',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall!
+                                .copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) => FutureSuccessDialog(
+                                      future: _deleteEverything()));
+                            },
+                            child: Text('Igen'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        Visibility(
+          visible: adminMode,
+          child: Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: ListTile(
+              leading: Icon(Icons.logout,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              title: Text(
+                'Kilépés admin módból',
+                style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => FutureSuccessDialog(
+                    future: Future.delayed(Duration(milliseconds: 600)).then(
+                      (value) {
+                        Navigator.pop(context);
                         adminMode = false;
-                      }
-                      setState(() {});
-                      return true;
-                    },
+                        setState(() {});
+                        return true;
+                      },
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
+          ),
+        ),
+        Visibility(
+          visible: debugMode || adminMode || cleaningMode,
+          child: Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: ListTile(
+              leading: Icon(Icons.cleaning_services,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              title: Text(
+                cleaningMode ? 'Már nem takarítunk!' : 'Takarítunk!',
+                style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => FutureSuccessDialog(
+                    future: Future.delayed(Duration(milliseconds: 600)).then(
+                      (value) {
+                        Navigator.pop(context);
+                        cleaningMode = !cleaningMode;
+                        if (cleaningMode) {
+                          adminMode = false;
+                        }
+                        setState(() {});
+                        return true;
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ],
@@ -450,7 +615,7 @@ class _MainPageState extends State<MainPage> {
     Product.allProducts = [];
     Purchase.allPurchases = [];
     Product.maxId = 0;
-    Future.delayed(Duration(milliseconds: 300))
+    Future.delayed(Duration(milliseconds: 600))
         .then((value) => _onDeleteEverything());
     await DatabaseHelper.instance.initDatabase();
     return true;
@@ -465,7 +630,7 @@ class _MainPageState extends State<MainPage> {
   Future<bool> _downloadData() async {
     http.Response response = await httpGet(context: context, uri: '/import');
     dynamic decoded = jsonDecode(response.body);
-    print(decoded['users'][0]['name']);
+    print(decoded);
     List<dynamic> users = decoded['users'];
     List<dynamic> products = decoded['products'];
     print(decoded['products']);
@@ -499,7 +664,10 @@ class _MainPageState extends State<MainPage> {
           enabled: product['deleted_at'] == null);
     }
     initPurchases();
-    Future.delayed(Duration(milliseconds: 300))
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    lastUpdatedAt = DateTime.now().toIso8601String();
+    prefs.setString('last_updated', lastUpdatedAt);
+    Future.delayed(Duration(milliseconds: 600))
         .then((value) => _onDownloadData());
     return true;
   }
@@ -510,7 +678,6 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<bool> _uploadData() async {
-    // lastUpdatedAt="2019-01-01T00:00:00.000Z";
     Map<String, dynamic> body = {
       'users': User.allUsers
           .where((element) =>
@@ -541,7 +708,7 @@ class _MainPageState extends State<MainPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     lastUpdatedAt = DateTime.now().toIso8601String();
     prefs.setString('last_updated', lastUpdatedAt);
-    Future.delayed(Duration(milliseconds: 300))
+    Future.delayed(Duration(milliseconds: 600))
         .then((value) => _onUploadData());
     return true;
   }

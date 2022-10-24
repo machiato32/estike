@@ -49,8 +49,8 @@ class OtherButton extends StatelessWidget {
                         Text(
                           "Egyéni",
                           style: (smallScreen
-                                  ? Theme.of(context).textTheme.headline5
-                                  : Theme.of(context).textTheme.headline4)!
+                                  ? Theme.of(context).textTheme.headlineSmall
+                                  : Theme.of(context).textTheme.headlineMedium)!
                               .copyWith(
                                   color:
                                       Theme.of(context).colorScheme.onPrimary),
@@ -146,7 +146,7 @@ class OtherButton extends StatelessWidget {
   Future<bool> _postPurchase(double amount, BuildContext context) async {
     await user.modifyBalance(-amount.ceil());
     addPurchase(user.id, Product.modifiedBalanceId, -amount);
-    Future.delayed(Duration(milliseconds: 300))
+    Future.delayed(Duration(milliseconds: 600))
         .then((value) => _onPostPurchases(context));
     return true;
   }

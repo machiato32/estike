@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:io';
 import 'package:estike/models/product.dart';
 import 'package:estike/models/purchase.dart';
+import 'package:estike/to_english_alphabet_extension.dart';
 import 'package:estike/widgets/product/product_page.dart';
 import 'package:estike/widgets/user/cashButton.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +37,7 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
         children: [
           TextFormField(
             autofocus: (Platform.isWindows || Platform.isLinux),
-            // focusNode: _focusNode,
+            focusNode: _focusNode,
             onChanged: (value) {
               setState(() {
                 searchWord = value;
@@ -74,7 +75,9 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
     setState(() {
       controller.clear();
       searchWord = '';
-      FocusScope.of(context).requestFocus(_focusNode);
+      if (Platform.isWindows || Platform.isLinux) {
+        FocusScope.of(context).requestFocus(_focusNode);
+      }
     });
   }
 
@@ -131,7 +134,11 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
       _users = _users
           .where((element) =>
               element.id.toString().contains(searchWord) ||
-              element.name.toLowerCase().contains(searchWord.toLowerCase()))
+              element.name.toLowerCase().contains(searchWord.toLowerCase()) ||
+              element.name
+                  .toLowerCase()
+                  .toEnglishAlphabet()
+                  .contains(searchWord.toLowerCase().toEnglishAlphabet()))
           .toList();
     }
     sortUsers();
@@ -139,7 +146,7 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
     double widgetWidth = widget.width;
     bool smallText = false;
     int columnCount = (widgetWidth / 200).floor();
-    print(widgetWidth);
+    // print(widgetWidth);
     if (widgetWidth < 800) {
       smallText = true;
       columnCount = (widgetWidth / 150).floor();

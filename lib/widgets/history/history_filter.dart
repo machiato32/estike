@@ -57,10 +57,16 @@ class _HistoryFilterDialogState extends State<HistoryFilterDialog> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Kezdődátum: ' +
-                  (_fromDate != null
-                      ? DateFormat('yyyy-MM-dd').format(_fromDate!)
-                      : '2020-01-01')),
+              Flexible(
+                child: Text(
+                  'Kezdődátum: ' +
+                      (_fromDate != null
+                          ? DateFormat('yyyy-MM-dd').format(_fromDate!)
+                          : '2020-01-01'),
+                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                ),
+              ),
               TextButton(
                   onPressed: () {
                     showDatePicker(
@@ -85,9 +91,14 @@ class _HistoryFilterDialogState extends State<HistoryFilterDialog> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Végdátum: ' +
-                  DateFormat('yyyy-MM-dd')
-                      .format(_toDate != null ? _toDate! : DateTime.now())),
+              Flexible(
+                child: Text(
+                    'Végdátum: ' +
+                        DateFormat('yyyy-MM-dd').format(
+                            _toDate != null ? _toDate! : DateTime.now()),
+                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              ),
               TextButton(
                   onPressed: () {
                     showDatePicker(
@@ -112,7 +123,11 @@ class _HistoryFilterDialogState extends State<HistoryFilterDialog> {
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Flexible(child: Text('Felhasználó')),
+              Flexible(
+                child: Text('Felhasználó',
+                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              ),
               Expanded(
                 child: DropdownSearch<User>(
                   itemAsString: (User user) =>
@@ -122,6 +137,13 @@ class _HistoryFilterDialogState extends State<HistoryFilterDialog> {
                       user.id.toString().contains(search) ||
                       user.name.contains(search),
                   popupProps: PopupProps.dialog(
+                      textStyle: Theme.of(context)
+                          .textTheme
+                          .bodyLarge!
+                          .copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                       showSearchBox: true,
                       searchDelay: Duration(milliseconds: 0)),
                   clearButtonProps: ClearButtonProps(isVisible: true),
@@ -139,10 +161,15 @@ class _HistoryFilterDialogState extends State<HistoryFilterDialog> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Feltöltések mutatása'),
+              Flexible(
+                child: Text('Feltöltések mutatása',
+                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              ),
               Checkbox(
                   value: _showBalanceModifications,
                   activeColor: Theme.of(context).colorScheme.primary,
+                  checkColor: Theme.of(context).colorScheme.onPrimary,
                   onChanged: (value) {
                     if (value != null) {
                       setState(() {

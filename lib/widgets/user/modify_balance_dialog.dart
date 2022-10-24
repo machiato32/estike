@@ -31,7 +31,8 @@ class _ModifyBalanceDialogState extends State<ModifyBalanceDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(widget.selectedUser.name,
-                style: Theme.of(context).textTheme.headline6),
+                style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
             SizedBox(
               height: 15,
             ),
@@ -87,7 +88,7 @@ class _ModifyBalanceDialogState extends State<ModifyBalanceDialog> {
           balance.toDouble());
       await widget.selectedUser.modifyBalance(balance);
 
-      Future.delayed(Duration(milliseconds: 300))
+      Future.delayed(Duration(milliseconds: 600))
           .then((value) => _onUpdateBalance());
       return true;
     } catch (_) {

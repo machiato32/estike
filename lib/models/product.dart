@@ -188,7 +188,6 @@ Future<void> initProducts() async {
 Future<List<Product>> queryProducts() async {
   Database db = await DatabaseHelper.instance.database;
   List<Map<String, dynamic>> products = await db.query('products');
-  print(products);
   return products.map((e) => Product.fromMap(e)).toList();
 }
 

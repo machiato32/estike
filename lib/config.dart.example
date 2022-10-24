@@ -1,0 +1,7 @@
+String APP_URL = "yourApiUrl";
+String lastUpdatedAt = "2020-01-01";
+bool adminMode = false;
+String adminPassword = "yourAdminPassword";
+bool debugMode = false;
+bool cleaningMode = false;
+String addUserPassword = "YourPassword";

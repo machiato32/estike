@@ -7,6 +7,14 @@ import 'package:flutter/services.dart';
 
 import '../../models/product.dart';
 
+class PopIntent extends Intent {
+  const PopIntent();
+}
+
+class AddUserIntent extends Intent {
+  const AddUserIntent();
+}
+
 class AddUserPage extends StatefulWidget {
   const AddUserPage({Key? key}) : super(key: key);
 
@@ -37,159 +45,181 @@ class _AddUserPageState extends State<AddUserPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Felhasználó hozzáadása"),
-      ),
-      body: Form(
-        key: key,
-        child: ListView(
-          padding: EdgeInsets.all(10),
-          children: [
-            TextFormField(
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              validator: (String? text) {
-                if (text == null) {
-                  return 'Jaj!';
-                }
-                if (text == '') {
-                  return 'Nem lehet üres!';
-                }
-                return null;
-              },
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: 'Név',
-              ),
+    return Shortcuts(
+      shortcuts: <LogicalKeySet, Intent>{
+        LogicalKeySet(LogicalKeyboardKey.escape): PopIntent(),
+        LogicalKeySet(LogicalKeyboardKey.enter): AddUserIntent(),
+      },
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          PopIntent: CallbackAction<PopIntent>(
+            onInvoke: (PopIntent intent) => Navigator.pop(context),
+          ),
+          AddUserIntent: CallbackAction<AddUserIntent>(
+            onInvoke: (AddUserIntent intent) => _addUser(),
+          )
+        },
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text("Felhasználó hozzáadása"),
             ),
-            TextFormField(
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              validator: (String? text) {
-                if (text == null) {
-                  return 'Jaj!';
-                }
-                if (text == '') {
-                  return 'Nem lehet üres!';
-                }
-                int? id = int.tryParse(text);
-                if (id == null) {
-                  return 'Csak szám lehet!';
-                }
-                if (User.allUsers.where((user) => user.id == id).isNotEmpty) {
-                  return 'Már foglalt!';
-                }
-                return null;
-              },
-              controller: idController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-              ],
-              decoration: InputDecoration(
-                labelText: 'Kód',
-              ),
-            ),
-            TextFormField(
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              validator: (String? text) {
-                if (text == null) {
-                  return 'Jaj!';
-                }
-                int? id = int.tryParse(text);
-                if (id == null && text != '') {
-                  return 'Csak szám lehet!';
-                }
-                return null;
-              },
-              controller: balanceController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-              ],
-              decoration: InputDecoration(
-                hintText: '0',
-                labelText: 'Kezdőtőke',
-              ),
-            ),
-            TextField(
-              obscureText: true,
-              controller: passwordController,
-              decoration: InputDecoration(
-                labelText: 'Jelszó',
-                hintText: 'Admin jelszó',
-              ),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  if (passwordController.text == addUserPassword) {
-                    if (key.currentState!.validate()) {
-                      String name = nameController.text;
-                      int id = int.parse(idController.text);
-                      int balance = 0;
-                      if (balanceController.text != '') {
-                        balance = int.parse(balanceController.text);
+            body: Form(
+              key: key,
+              child: ListView(
+                padding: EdgeInsets.all(10),
+                children: [
+                  TextFormField(
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (String? text) {
+                      if (text == null) {
+                        return 'Jaj!';
                       }
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return FutureSuccessDialog(
-                            future: _postUser(name, id, balance),
-                          );
-                        },
-                      );
-                    }
-                  } else {
-                    showDialog(
-                      context: context,
-                      builder: (context) => Dialog(
-                        child: Padding(
-                          padding: const EdgeInsets.all(30),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Hibás jelszó 😢',
-                                style: Theme.of(context).textTheme.headline4,
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              Text(
-                                'Kérdezd meg Dominikot 😎',
-                                textAlign: TextAlign.center,
-                              ),
-                              Text(
-                                'Ha te vagy Dominik, akkor ajánlom, hogy ilyen állapotban ne adj hozzá embereket a számlához',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyText2!
-                                    .copyWith(fontSize: 8),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
+                      if (text == '') {
+                        return 'Nem lehet üres!';
+                      }
+                      return null;
+                    },
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Név',
+                    ),
+                  ),
+                  TextFormField(
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (String? text) {
+                      if (text == null) {
+                        return 'Jaj!';
+                      }
+                      if (text == '') {
+                        return 'Nem lehet üres!';
+                      }
+                      int? id = int.tryParse(text);
+                      if (id == null) {
+                        return 'Csak szám lehet!';
+                      }
+                      if (User.allUsers
+                          .where((user) => user.id == id)
+                          .isNotEmpty) {
+                        return 'Már foglalt!';
+                      }
+                      return null;
+                    },
+                    controller: idController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                    ],
+                    decoration: InputDecoration(
+                      labelText: 'Kód',
+                    ),
+                  ),
+                  TextFormField(
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (String? text) {
+                      if (text == null) {
+                        return 'Jaj!';
+                      }
+                      int? id = int.tryParse(text);
+                      if (id == null && text != '') {
+                        return 'Csak szám lehet!';
+                      }
+                      return null;
+                    },
+                    controller: balanceController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                    ],
+                    decoration: InputDecoration(
+                      hintText: '0',
+                      labelText: 'Kezdőtőke',
+                    ),
+                  ),
+                  TextField(
+                    obscureText: true,
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'Jelszó',
+                      hintText: 'Admin jelszó',
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: _addUser,
+                      child: Icon(
+                        Icons.send,
                       ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                    primary: Theme.of(context).colorScheme.primary),
-                child: Icon(
-                  Icons.send,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
+                    ),
+                  )
+                ],
               ),
-            )
-          ],
+            ),
+          ),
         ),
       ),
     );
+  }
+
+  void _addUser() {
+    if (passwordController.text == addUserPassword) {
+      if (key.currentState!.validate()) {
+        String name = nameController.text;
+        int id = int.parse(idController.text);
+        int balance = 0;
+        if (balanceController.text != '') {
+          balance = int.parse(balanceController.text);
+        }
+        showDialog(
+          context: context,
+          builder: (context) {
+            return FutureSuccessDialog(
+              future: _postUser(name, id, balance),
+            );
+          },
+        );
+      }
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(30),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Hibás jelszó 😢',
+                  style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  'Kérdezd meg Dominikot 😎',
+                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  'Ha te vagy Dominik, akkor ajánlom, hogy ilyen állapotban ne adj hozzá embereket a számlához',
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 8),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   Future<bool> _postUser(String name, int id, int balance) async {
@@ -197,7 +227,7 @@ class _AddUserPageState extends State<AddUserPage> {
       await addUser(name, id, balance: balance);
       await addPurchase(id, Product.modifiedBalanceId, balance.toDouble());
 
-      Future.delayed(Duration(milliseconds: 300))
+      Future.delayed(Duration(milliseconds: 600))
           .then((value) => _onPostUser());
       return true;
     } catch (_) {

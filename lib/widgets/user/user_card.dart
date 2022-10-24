@@ -5,7 +5,7 @@ import '../product/product_page.dart';
 
 class UserCard extends StatelessWidget {
   final Function resetTextField;
-  late Function onTap;
+  late final Function onTap;
   final User user;
   final bool small;
   UserCard(

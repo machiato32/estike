@@ -6,7 +6,7 @@ class CashButton extends StatelessWidget {
   final bool smallText;
   final bool isVisible;
   final int columnCount;
-  Function() resetAll;
+  final Function() resetAll;
   CashButton(
       {required this.smallText,
       required this.isVisible,
@@ -47,18 +47,24 @@ class CashButton extends StatelessWidget {
                           style: smallText
                               ? Theme.of(context)
                                   .textTheme
-                                  .headline5!
-                                  .copyWith(color: Colors.black)
+                                  .headlineSmall!
+                                  .copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary)
                               : Theme.of(context)
                                   .textTheme
-                                  .headline4!
-                                  .copyWith(color: Colors.black),
+                                  .headlineMedium!
+                                  .copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary),
                           textAlign: TextAlign.center,
                         ),
                         Flexible(
                           child: Icon(
                             Icons.attach_money,
-                            color: Colors.black,
+                            color: Theme.of(context).colorScheme.onPrimary,
                             size: smallText ? 20 : 30,
                           ),
                         ),

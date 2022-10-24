@@ -34,7 +34,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   toDate: _toDate,
                   userId: _userId,
                   onFromDateChanged: (DateTime? fromDate) {
-                    _fromDate = _fromDate;
+                    _fromDate = fromDate;
                   },
                   onToDateChanged: (toDate) {
                     _toDate = toDate;
@@ -47,9 +47,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     _showBalanceModifications = showBalanceModifications;
                   },
                 ),
-              ).then((value) => setState(() {
-                    print(_userId);
-                  }));
+              ).then((value) => setState(() {}));
             },
             icon: Icon(Icons.filter_list_alt),
           )
@@ -120,7 +118,6 @@ class _HistoryPageState extends State<HistoryPage> {
           groupedPurchases[purchaseId] = [lastPurchase];
         }
       }
-      print(groupedPurchases);
       bool alreadyDrawnLine = false;
       return groupedPurchases.values
           .map((purchases) {
@@ -134,7 +131,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     children: [
                       Divider(
                         height: 35,
-                        color: Colors.red,
+                        color: Theme.of(context).colorScheme.tertiary,
                         thickness: 3,
                       ),
                       Align(
@@ -149,8 +146,10 @@ class _HistoryPageState extends State<HistoryPage> {
                                     .format(DateTime.parse(lastUpdatedAt)),
                             style: Theme.of(context)
                                 .textTheme
-                                .headline6!
-                                .copyWith(color: Colors.red),
+                                .headlineSmall!
+                                .copyWith(
+                                    color:
+                                        Theme.of(context).colorScheme.tertiary),
                           ),
                         ),
                       )

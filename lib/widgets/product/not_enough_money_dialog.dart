@@ -37,7 +37,7 @@ class _NotEnoughMoneyDialogState extends State<NotEnoughMoneyDialog> {
   Future<bool> _postAmount() async {
     await widget.user.modifyBalance(-widget.amount!.ceil());
     addPurchase(widget.user.id, Product.modifiedBalanceId, -widget.amount!);
-    Future.delayed(Duration(milliseconds: 300))
+    Future.delayed(Duration(milliseconds: 600))
         .then((value) => _onPostPurchases());
     return true;
   }
@@ -62,7 +62,7 @@ class _NotEnoughMoneyDialogState extends State<NotEnoughMoneyDialog> {
           await widget.user.modifyBalance(-sum(widget.productsToBuy!).ceil());
         }
 
-        Future.delayed(Duration(milliseconds: 300))
+        Future.delayed(Duration(milliseconds: 600))
             .then((value) => _onPostPurchases());
 
         return true;

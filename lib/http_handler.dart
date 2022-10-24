@@ -32,6 +32,7 @@ enum GetUriKeys {
   purchasesDate,
   paymentsDate
 }
+
 List<String> getUris = [
   '/customers',
   '/products',
@@ -109,7 +110,7 @@ Widget errorToast(String msg, BuildContext context) {
 }
 
 Duration delayTime() {
-  return Duration(milliseconds: 300);
+  return Duration(milliseconds: 600);
 }
 
 Future<http.Response> httpGet(
@@ -165,7 +166,7 @@ Future<http.Response> httpPost(
       return response;
     } else {
       print('5');
-      
+
       print(response.body);
       Map<String, dynamic> error = jsonDecode(response.body);
       throw error['errors'];
