@@ -1,21 +1,6 @@
 name: estike
 description: A new Flutter project.
-
-# The following line prevents the package from being accidentally published to
-# pub.dev using `pub publish`. This is preferred for private packages.
-publish_to: "none" # Remove this line if you wish to publish to pub.dev
-
-# The following defines the version and build number for your application.
-# A version number is three numbers separated by dots, like 1.2.43
-# followed by an optional build number separated by a +.
-# Both the version and the builder number may be overridden in flutter
-# build by specifying --build-name and --build-number, respectively.
-# In Android, build-name is used as versionName while build-number used as versionCode.
-# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
-# In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
-# Read more about iOS versioning at
-# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 2.0.0
+version: 2.1.0+1
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -32,7 +17,7 @@ dependencies:
   intl: ^0.17.0
   http: ^0.13.3
   path_provider: ^2.0.2
-  permission_handler: ^8.1.4+2
+  permission_handler: ^10.2.0
   sqflite_common_ffi: ^2.1.0
   shared_preferences: ^2.0.11
   flutter_window_close: ^0.2.2
@@ -53,7 +38,7 @@ msix_config:
   identity_name: DodoDevs.ec.Estike
   logo_path: ./assets/E.png
   app_installer:
-    publish_folder_path: C:\Users\szasa\Desktop
+    publish_folder_path: C:\Users\sszajbely\Desktop
     hours_between_update_checks: 0
     automatic_background_task: true
     update_blocks_activation: true
