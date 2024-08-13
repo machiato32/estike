@@ -38,6 +38,11 @@ void main() async {
   } else {
     prefs.setString('app_url', APP_URL);
   }
+  if (prefs.containsKey('recycled_can_price')) {
+    recycledCanPrice = prefs.getInt('recycled_can_price')!;
+  } else {
+    prefs.setInt('recycled_can_price', recycledCanPrice);
+  }
   runApp(MyApp());
 }
 

@@ -102,7 +102,7 @@ Widget errorToast(String msg, BuildContext context) {
             child: Text(msg,
                 style: Theme.of(context)
                     .textTheme
-                    .bodyText1!
+                    .bodyLarge!
                     .copyWith(color: Colors.white))),
       ],
     ),

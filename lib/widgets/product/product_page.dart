@@ -3,10 +3,12 @@ import 'package:estike/widgets/future_success_dialog.dart';
 import 'package:estike/widgets/product/not_enough_money_dialog.dart';
 import 'package:estike/widgets/product/product_ledger_item.dart';
 import 'package:estike/widgets/product/product_page_other_button.dart';
+import 'package:estike/widgets/user/modify_balance.dart';
 import 'package:estike/widgets/user/modify_balance_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../config.dart';
 import '../../models/product.dart';
 import '../../models/user.dart';
 import 'product_card.dart';
@@ -67,6 +69,28 @@ class _ProductPageState extends State<ProductPage> {
               actions: widget.user.id == User.cashUserId
                   ? []
                   : [
+                      TextButton(
+                        child: Row(
+                          children: [
+                            Text(
+                              "Visszaváltás (50)",
+                            ),
+                            SizedBox(
+                              width: 5,
+                            ),
+                            Icon(
+                              Icons.recycling,
+                            ),
+                          ],
+                        ),
+                        onPressed: () => showDialog(
+                          context: context,
+                          builder: (context) =>
+                            FutureSuccessDialog(
+                              future: addRecycledCanPrice(),
+                            ),
+                        ),
+                      ),
                       TextButton(
                         child: Row(
                           children: [
@@ -152,6 +176,21 @@ class _ProductPageState extends State<ProductPage> {
         productsToBuy[product] = 0.5;
       }
     });
+  }
+
+  Future<bool> addRecycledCanPrice() async {
+    try {
+      await addPurchase(widget.user.id, Product.modifiedBalanceId,
+          recycledCanPrice.toDouble());
+      await widget.user.modifyBalance(recycledCanPrice);
+
+      Future.delayed(Duration(milliseconds: 600))
+          .then((value) {Navigator.pop(context); Navigator.pop(context);});
+
+      return true;
+    } catch (_) {
+      throw _;
+    }
   }
 
   void addProductToList(Product product) {
@@ -251,7 +290,7 @@ class _ProductPageState extends State<ProductPage> {
                               .copyWith(
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .onBackground),
+                                      .onSurface),
                         ),
                         Flexible(
                           child: Text(
@@ -263,7 +302,7 @@ class _ProductPageState extends State<ProductPage> {
                                 .copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onBackground),
+                                        .onSurface),
                           ),
                         ),
                       ],
@@ -277,7 +316,7 @@ class _ProductPageState extends State<ProductPage> {
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge!
-                  .copyWith(color: Theme.of(context).colorScheme.onBackground),
+                  .copyWith(color: Theme.of(context).colorScheme.onSurface),
             ),
           ],
         ),
@@ -299,7 +338,7 @@ class _ProductPageState extends State<ProductPage> {
               Text(
                 'Összesen: ' + sum(productsToBuy).toString() + '🐪',
                 style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                    color: Theme.of(context).colorScheme.onBackground),
+                    color: Theme.of(context).colorScheme.onSurface),
               ),
             ],
           ),
@@ -363,7 +402,7 @@ class _ProductPageState extends State<ProductPage> {
             children: [
               Text(
                 'Ajánlott',
-                style: Theme.of(context).textTheme.headline3,
+                style: Theme.of(context).textTheme.displaySmall,
               ),
               _generateGrid(null, products, columnCount, smallText),
             ],
@@ -435,7 +474,7 @@ class _ProductPageState extends State<ProductPage> {
                 Flexible(
                   child: Text(
                     ' ' + name,
-                    style: Theme.of(context).textTheme.headline3,
+                    style: Theme.of(context).textTheme.displaySmall,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

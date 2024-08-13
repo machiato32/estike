@@ -33,7 +33,7 @@ class ProductLedgerItem extends StatelessWidget {
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge!
-                  .copyWith(color: Theme.of(context).colorScheme.onBackground),
+                  .copyWith(color: Theme.of(context).colorScheme.onSurface),
             ),
           ),
           Row(
@@ -55,7 +55,7 @@ class ProductLedgerItem extends StatelessWidget {
                 child: Text(
                   '½',
                   style: TextStyle(
-                      color: Theme.of(context).colorScheme.onBackground,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 20,
                       fontWeight: FontWeight.bold),
                 ),
@@ -66,7 +66,7 @@ class ProductLedgerItem extends StatelessWidget {
                 },
                 icon: Icon(
                   Icons.add,
-                  color: Theme.of(context).colorScheme.onBackground,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               Container(
@@ -74,7 +74,7 @@ class ProductLedgerItem extends StatelessWidget {
                 child: Text(
                   (product.price * itemNum).ceil().toString() + '🐪',
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                      color: Theme.of(context).colorScheme.onBackground),
+                      color: Theme.of(context).colorScheme.onSurface),
                 ),
               ),
             ],
