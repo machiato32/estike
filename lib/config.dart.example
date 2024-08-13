@@ -5,3 +5,4 @@ String adminPassword = "yourAdminPassword";
 bool debugMode = false;
 bool cleaningMode = false;
 String addUserPassword = "YourPassword";
+int recycledCanPrice = 50;
