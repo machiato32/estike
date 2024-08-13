@@ -84,7 +84,7 @@ class OtherButton extends StatelessWidget {
           children: [
             Text(
               'Vonj le valamennyit!',
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
             TextFormField(
               controller: otherTextController,

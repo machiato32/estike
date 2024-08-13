@@ -160,7 +160,7 @@ class _AdminSettingsDialogState extends State<AdminSettingsDialog> {
                       ),
                 ),
                 style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(
+                    backgroundColor: WidgetStateProperty.all(
                         Theme.of(context).colorScheme.secondary)),
               ),
             ],

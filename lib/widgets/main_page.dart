@@ -65,7 +65,7 @@ class _MainPageState extends State<MainPage> {
                                           'Add meg a jelszót!',
                                           style: Theme.of(context)
                                               .textTheme
-                                              .headline5,
+                                              .headlineSmall,
                                           textAlign: TextAlign.center,
                                         ),
                                         TextFormField(

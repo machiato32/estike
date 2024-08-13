@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   flutter_window_close
   permission_handler_windows
+  rive_common
   url_launcher_windows
 )
 

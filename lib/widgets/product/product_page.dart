@@ -251,7 +251,7 @@ class _ProductPageState extends State<ProductPage> {
                               .copyWith(
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .onBackground),
+                                      .onSurface),
                         ),
                         Flexible(
                           child: Text(
@@ -263,7 +263,7 @@ class _ProductPageState extends State<ProductPage> {
                                 .copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onBackground),
+                                        .onSurface),
                           ),
                         ),
                       ],
@@ -277,7 +277,7 @@ class _ProductPageState extends State<ProductPage> {
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge!
-                  .copyWith(color: Theme.of(context).colorScheme.onBackground),
+                  .copyWith(color: Theme.of(context).colorScheme.onSurface),
             ),
           ],
         ),
@@ -299,7 +299,7 @@ class _ProductPageState extends State<ProductPage> {
               Text(
                 'Összesen: ' + sum(productsToBuy).toString() + '🐪',
                 style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                    color: Theme.of(context).colorScheme.onBackground),
+                    color: Theme.of(context).colorScheme.onSurface),
               ),
             ],
           ),
@@ -363,7 +363,7 @@ class _ProductPageState extends State<ProductPage> {
             children: [
               Text(
                 'Ajánlott',
-                style: Theme.of(context).textTheme.headline3,
+                style: Theme.of(context).textTheme.displaySmall,
               ),
               _generateGrid(null, products, columnCount, smallText),
             ],
@@ -435,7 +435,7 @@ class _ProductPageState extends State<ProductPage> {
                 Flexible(
                   child: Text(
                     ' ' + name,
-                    style: Theme.of(context).textTheme.headline3,
+                    style: Theme.of(context).textTheme.displaySmall,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

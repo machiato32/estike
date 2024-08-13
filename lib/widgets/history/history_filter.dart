@@ -137,6 +137,7 @@ class _HistoryFilterDialogState extends State<HistoryFilterDialog> {
                       user.id.toString().contains(search) ||
                       user.name.contains(search),
                   popupProps: PopupProps.dialog(
+                      /*
                       textStyle: Theme.of(context)
                           .textTheme
                           .bodyLarge!
@@ -144,6 +145,7 @@ class _HistoryFilterDialogState extends State<HistoryFilterDialog> {
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
+                      */
                       showSearchBox: true,
                       searchDelay: Duration(milliseconds: 0)),
                   clearButtonProps: ClearButtonProps(isVisible: true),

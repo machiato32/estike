@@ -43,8 +43,8 @@ class ProductCard extends StatelessWidget {
                       child: Text(
                         product.name,
                         style: (small
-                                ? Theme.of(context).textTheme.headline5
-                                : Theme.of(context).textTheme.headline4)!
+                                ? Theme.of(context).textTheme.headlineSmall
+                                : Theme.of(context).textTheme.headlineMedium)!
                             .copyWith(color: onCardColor),
                         textAlign: TextAlign.center,
                       ),
@@ -53,8 +53,8 @@ class ProductCard extends StatelessWidget {
                       child: Text(
                         product.price.toString() + '🐪',
                         style: (small
-                                ? Theme.of(context).textTheme.headline6
-                                : Theme.of(context).textTheme.headline5)!
+                                ? Theme.of(context).textTheme.titleLarge
+                                : Theme.of(context).textTheme.headlineSmall)!
                             .copyWith(color: onCardColor),
                         textAlign: TextAlign.center,
                       ),
