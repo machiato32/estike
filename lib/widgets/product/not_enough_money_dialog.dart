@@ -100,7 +100,7 @@ class _NotEnoughMoneyDialogState extends State<NotEnoughMoneyDialog> {
           children: [
             Text(
               'Nincs elég pénz a számlán!',
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
             TextButton(
               onPressed: () => Navigator.pop(context),

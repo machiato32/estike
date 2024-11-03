@@ -131,7 +131,7 @@ class _FutureSuccessDialogState extends State<FutureSuccessDialog> {
                     .copyWith(color: Theme.of(context).colorScheme.onError),
               ),
               style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(
+                  backgroundColor: WidgetStateProperty.all<Color>(
                       Theme.of(context).colorScheme.error)),
             )
           ],
@@ -177,7 +177,7 @@ class _FutureSuccessDialogState extends State<FutureSuccessDialog> {
                     .copyWith(color: Theme.of(context).colorScheme.onError),
               ),
               style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(
+                backgroundColor: WidgetStateProperty.all<Color>(
                     Theme.of(context).colorScheme.error),
               ),
             )

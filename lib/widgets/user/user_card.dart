@@ -65,8 +65,8 @@ class UserCard extends StatelessWidget {
                           Text(
                             user.id.toString(),
                             style: (small
-                                    ? Theme.of(context).textTheme.headline6
-                                    : Theme.of(context).textTheme.headline5)!
+                                    ? Theme.of(context).textTheme.titleLarge
+                                    : Theme.of(context).textTheme.headlineSmall)!
                                 .copyWith(color: onCardColor),
                             textAlign: TextAlign.center,
                           ),
@@ -74,8 +74,8 @@ class UserCard extends StatelessWidget {
                             child: Text(
                               user.name,
                               style: (small
-                                      ? Theme.of(context).textTheme.headline5
-                                      : Theme.of(context).textTheme.headline4)!
+                                      ? Theme.of(context).textTheme.headlineSmall
+                                      : Theme.of(context).textTheme.headlineMedium)!
                                   .copyWith(color: onCardColor),
                               textAlign: TextAlign.center,
                             ),
@@ -87,8 +87,8 @@ class UserCard extends StatelessWidget {
                       child: Text(
                         user.balance.toString() + '🐪',
                         style: (small
-                                ? Theme.of(context).textTheme.headline6
-                                : Theme.of(context).textTheme.headline5)!
+                                ? Theme.of(context).textTheme.titleLarge
+                                : Theme.of(context).textTheme.headlineSmall)!
                             .copyWith(color: onCardColor),
                         textAlign: TextAlign.center,
                       ),
